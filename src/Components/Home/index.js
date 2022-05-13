@@ -5,8 +5,8 @@ import { Link } from 'react-router-dom'
 function Home() {
 
 
-    const [shortuct, setShortucts] = useState([])
-    const [SelectedCategory, setSelectedCategory] = useState([])
+    const [shortucts, setShortucts] = useState([])
+    const [selectedCategory, setSelectedCategory] = useState([])
     useEffect(() => {
         const fetchData = async () => {
             const r = await apiService.getShortcuts();
@@ -18,14 +18,27 @@ function Home() {
         fetchData();
     }, []);
 
+
+    const categoryClick = (e, documentId) => {
+        console.log(e);
+        let x = shortucts.find(x => x.document_id == documentId);
+        console.log(x);
+        setSelectedCategory(x);
+    }
+
     return (
         <div>
-            <p>good p</p>
-            <p>{JSON.stringify(shortuct, null, 2)}</p>
-            <p>xx</p>
-            <p>{shortuct.map(x => {
-                return (<p><Link to="#" >{x.name}</Link></p>)
+
+            <p>{shortucts.map(x => {
+                return (<p><Link to="#" onClick={(e) => categoryClick(e, x.document_id)} >{x.name} - {x.document_id}</Link></p>)
             })}</p>
+            <p>
+                {selectedCategory && selectedCategory.data && selectedCategory.data.map(x => { return (<div>{x.shortcut}</div>) })}
+            </p>
+            <p>X</p>
+            <p>X</p>
+            <p>X</p>
+            <p>{JSON.stringify(shortucts, null, 2)}</p>
         </div>
     )
 }
