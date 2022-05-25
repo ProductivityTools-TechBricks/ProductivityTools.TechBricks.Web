@@ -1,46 +1,25 @@
-import * as apiService from '../../services/apiService'
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-
-function Home() {
+import {auth,logout} from "../../Session/firebase"
+import {Link, useNavigate} from 'react-router-dom'
 
 
-    const [shortucts, setShortucts] = useState([])
-    const [selectedCategory, setSelectedCategory] = useState([])
-    useEffect(() => {
-        const fetchData = async () => {
-            const r = await apiService.getShortcuts();
-            if (r != null) {
-                setShortucts(r);
-                console.log(r);
-            }
-        }
-        fetchData();
-    }, []);
+function Home(){
 
+    const navigate=useNavigate();
 
-    const categoryClick = (e, documentId) => {
-        console.log(e);
-        let x = shortucts.find(x => x.document_id == documentId);
-        console.log(x);
-        setSelectedCategory(x);
+    const logoutAction=()=>{
+        logout();
+        navigate("/login");
+        
     }
 
-    return (
-        <div>
 
-            <p>{shortucts.map(x => {
-                return (<p><Link to="#" onClick={(e) => categoryClick(e, x.document_id)} >{x.name} - {x.document_id}</Link></p>)
-            })}</p>
-            <p>
-                {selectedCategory && selectedCategory.data && selectedCategory.data.map(x => { return (<div>{x.shortcut}</div>) })}
-            </p>
-            <p>X</p>
-            <p>X</p>
-            <p>X</p>
-            <p>{JSON.stringify(shortucts, null, 2)}</p>
-        </div>
-    )
+    return(<div>
+        <p>welcome on tech bricks</p>
+        <p>{auth?.currentUser?.displayName}</p>
+        <p>{auth?.currentUser?.email}</p>
+        <p><button onClick={logoutAction}>logout</button></p>
+        <Link to="/shortcuts">List</Link>
+    </div>)
 }
 
 export default Home;
