@@ -27,6 +27,7 @@ const signInWithGoogle = async () => {
         debugger;
         const res = await signInWithPopup(auth, googleProvider);
         console.log(res);
+        localStorage.setItem("Bearer",res.user.accessToken)
     } catch (err) {
         console.error(err);
         alert(err.message);

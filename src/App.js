@@ -12,7 +12,7 @@ function App() {
 
   return (
     <div className="App">
-      <BrowserRouter history={history} >
+      <BrowserRouter >
         <Routes>
           <Route path='/login' element={<Login/>}/> 
           <Route path='/' element={<Home />} />

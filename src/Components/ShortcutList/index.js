@@ -9,7 +9,7 @@ function ShortcutList() {
     const [selectedCategory, setSelectedCategory] = useState([])
     useEffect(() => {
         const fetchData = async () => {
-            debugger;
+            console.log("fetch data")
             const r = await apiService.getShortcuts();
             if (r != null) {
                 setShortucts(r);
@@ -29,7 +29,7 @@ function ShortcutList() {
 
     return (
         <div>
-
+            <span>ShortcutList</span>
             <p>{shortucts.map(x => {
                 return (<p><Link to="#" onClick={(e) => categoryClick(e, x.document_id)} >{x.name} - {x.document_id}</Link></p>)
             })}</p>
