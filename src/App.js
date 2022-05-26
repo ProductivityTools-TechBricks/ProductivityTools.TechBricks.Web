@@ -5,7 +5,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
 import Home from './Components/Home'
 import ShortcutList from './Components/ShortcutList';
-import NewShortcutItem from './Components/NewShortcutItem';
+import ShortcutItemNew from './Components/ShortcutItemNew';
 
 function App() {
 
@@ -19,7 +19,7 @@ function App() {
           <Route path='/' element={<Home />} />
           <Route path='/home' element={<Home />} />
           <Route path='/shortcuts' element={<ShortcutList/>}/>
-          <Route path='/shortcuts/new' element={<NewShortcutItem/>}/>
+          <Route path='/shortcuts/new' element={<ShortcutItemNew/>}/>
         </Routes>
       </BrowserRouter>
     </div>

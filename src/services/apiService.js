@@ -6,7 +6,6 @@ import {auth} from "../Session/firebase"
 async function getShortcuts() {
 
     let accessToken=localStorage.getItem("Bearer");
-    debugger;
     const header={
         //headers:{Authorization: `Bearer ${auth.currentUser.accessToken}`}
         headers:{Authorization: `Bearer ${accessToken}`}
