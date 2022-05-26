@@ -30,6 +30,7 @@ function ShortcutList() {
         <div>
             <span>ShortcutList</span>
             <Link to="/home">Home</Link>
+            <Link to="shortuct/new">New</Link>
             <p>{shortucts.map(x => {
                 return (<p><Link to="#" onClick={(e) => categoryClick(e, x.document_id)} >{x.name} - {x.document_id}</Link></p>)
             })}</p>
