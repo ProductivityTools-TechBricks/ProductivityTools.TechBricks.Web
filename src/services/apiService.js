@@ -3,12 +3,13 @@ import { config } from '../Consts'
 import {auth} from "../Session/firebase"
 
 
-async function getShortcuts() {
+async function getShortcuts(user) {
 
-    let accessToken=localStorage.getItem("Bearer");
+    //let accessToken=localStorage.getItem("Bearer");
     const header={
         //headers:{Authorization: `Bearer ${auth.currentUser.accessToken}`}
-        headers:{Authorization: `Bearer ${accessToken}`}
+        //headers:{Authorization: `Bearer ${accessToken}`}
+        headers:{Authorization: `Bearer ${user.accessToken}`}
     }
 
     const response = await axios.get(`${config.PATH_BASE}\Card`,header);

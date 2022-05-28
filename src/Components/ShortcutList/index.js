@@ -2,14 +2,19 @@ import * as apiService from '../../services/apiService'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import ShortuctItem from '../ShortcutItem'
+import { useAuth } from '../../Session/AuthContext.js'
+
 
 function ShortcutList() {
     const [shortucts, setShortucts] = useState([])
     const [selectedCategory, setSelectedCategory] = useState([])
+
+    const { user } = useAuth();
+
     useEffect(() => {
         const fetchData = async () => {
             console.log("fetch data")
-            const r = await apiService.getShortcuts();
+            const r = await apiService.getShortcuts(user);
             if (r != null) {
                 setShortucts(r);
                 console.log(r);
