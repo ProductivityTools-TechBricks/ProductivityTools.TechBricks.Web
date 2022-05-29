@@ -1,10 +1,17 @@
 import { Link } from 'react-router-dom'
+import * as apiService from '../../services/apiService'
+import {useAuth} from '../../Session/AuthContext'
 
 function ShortcutItemNew() {
+    const { user } = useAuth();
 
 
     const addShortcut = () => {
         console.log("add");
+        let data = {
+            xx:'fdsa'
+        }
+        apiService.addShortuct(user, data);
     }
 
     return (
