@@ -6,13 +6,10 @@ import { AuthProvider } from './Session/AuthContext'
 
 
 import Home from './Components/Home'
-import ShortcutList from './Components/ShortcutList';
-import ShortcutItemNew from './Components/ShortcutItemNew';
+import DictList from './Components/DictList';
+import DictItemNew from './Components/DictItemNew'
 
 function App() {
-
-
-
   return (
     <AuthProvider>
       <div className="App">
@@ -21,8 +18,8 @@ function App() {
             <Route path='/login' element={<Login />} />
             <Route path='/' element={<Home />} />
             <Route path='/home' element={<Home />} />
-            <Route path='/shortcuts' element={<ShortcutList />} />
-            <Route path='/shortcuts/new' element={<ShortcutItemNew />} />
+            <Route path='/dict' element={<DictList />} />
+            <Route path='/dict/new' element={<DictItemNew />} />
           </Routes>
         </BrowserRouter>
       </div>

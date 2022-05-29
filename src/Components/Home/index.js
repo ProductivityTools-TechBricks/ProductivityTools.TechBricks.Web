@@ -18,7 +18,7 @@ function Home(){
         <p>{auth?.currentUser?.displayName}</p>
         <p>{auth?.currentUser?.email}</p>
         <p><button onClick={logoutAction}>logout</button></p>
-        <Link to="/shortcuts">List</Link>
+        <Link to="/dict">List</Link>
     </div>)
 }
 
