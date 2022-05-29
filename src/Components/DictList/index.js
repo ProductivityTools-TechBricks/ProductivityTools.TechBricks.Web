@@ -31,21 +31,34 @@ function DictList() {
         setSelectedCategory(x);
     }
 
+    const renderMenu = () => {
+        return (<ul>{dict.map(x => {
+            return (<li><Link to="#" onClick={(e) => categoryClick(e, x.document_id)} >{x.name} - {x.document_id}</Link></li>)
+        })}</ul>)
+    }
+
+    const renderDictItems = () => {
+        return (<div>
+            {selectedCategory && selectedCategory.data && selectedCategory.data.map(x => { return (<DictItem data={x}></DictItem>) })}
+            
+        </div>)
+    }
+
     return (
         <div>
             <span>DictList</span>
             <Link to="/home">Home</Link>
-            <Link to="/shortcuts/new">New</Link>
-            <p>{dict.map(x => {
-                return (<p><Link to="#" onClick={(e) => categoryClick(e, x.document_id)} >{x.name} - {x.document_id}</Link></p>)
-            })}</p>
-            <p>
-                {selectedCategory && selectedCategory.data && selectedCategory.data.map(x => { return (<DictItem data={x}></DictItem>) })}
-            </p>
-            <p>X</p>
-            <p>X</p>
-            <p>X</p>
-            <p>{JSON.stringify(dict, null, 2)}</p>
+            <Link to="/dict/new">New</Link>
+            <div class="parent">
+                <div clas='left'>
+                    {renderMenu()}
+                </div>
+                <div class='right'>
+                    {renderDictItems()}
+                </div>
+            </div>
+
+            {/* <p>{JSON.stringify(dict, null, 2)}</p> */}
         </div>
     )
 }

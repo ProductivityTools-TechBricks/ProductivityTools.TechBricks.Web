@@ -1,3 +1,19 @@
 .App {
  color:darkslategray
 }
+
+.parent{
+    display: flex;
+
+}
+.left{
+    flex: 0 0 75%;
+
+}
+
+
+.right{
+    flex: 1;
+
+}
+
