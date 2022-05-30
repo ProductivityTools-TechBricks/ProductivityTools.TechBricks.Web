@@ -25,7 +25,18 @@ async function addShortuct(user, shortuct) {
     return response.data;
 }
 
+async function addBrick(user,data) {
+    const header = {
+        headers: { Authorization: `Bearer ${user.accessToken}` }
+    }
+    // let brick = {
+    //     name: "Office"
+    // }
+    const response = await axios.post(`${config.PATH_BASE}\Brick`, data, header)
+}
+
 export {
     getShortcuts,
-    addShortuct
+    addShortuct,
+    addBrick
 } 

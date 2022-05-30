@@ -1,11 +1,11 @@
 import * as apiService from '../../services/apiService'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import DictItem from '../DictItem'
+import BrickItem from '../BrickItem'
 import { useAuth } from '../../Session/AuthContext.js'
 
 
-function DictList() {
+function BrickList() {
     const [dict, setDict] = useState([])
     const [selectedCategory, setSelectedCategory] = useState([])
 
@@ -37,24 +37,24 @@ function DictList() {
         })}</ul>)
     }
 
-    const renderDictItems = () => {
+    const renderBrickItems = () => {
         return (<div>
-            {selectedCategory && selectedCategory.data && selectedCategory.data.map(x => { return (<DictItem data={x}></DictItem>) })}
+            {selectedCategory && selectedCategory.data && selectedCategory.data.map(x => { return (<BrickItem data={x}></BrickItem>) })}
             
         </div>)
     }
 
     return (
         <div>
-            <span>DictList</span>
+            <span>BrickList</span>
             <Link to="/home">Home</Link>
-            <Link to="/dict/new">New</Link>
+            <Link to="/bricks/new">New</Link>
             <div class="parent">
                 <div clas='left'>
                     {renderMenu()}
                 </div>
                 <div class='right'>
-                    {renderDictItems()}
+                    {renderBrickItems()}
                 </div>
             </div>
 
@@ -63,4 +63,4 @@ function DictList() {
     )
 }
 
-export default DictList;
+export default BrickList;

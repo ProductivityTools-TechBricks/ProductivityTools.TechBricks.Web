@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import * as apiService from '../../services/apiService'
 import {useAuth} from '../../Session/AuthContext'
 
-function DictItemNew() {
+function BricktemNew() {
     const { user } = useAuth();
 
 
@@ -18,13 +18,14 @@ function DictItemNew() {
                 value:'Redo'
             }]
         }
-        apiService.addShortuct(user, data);
+        //apiService.addShortuct(user, data);
+        apiService.addBrick(user,data);
     }
 
     return (
         <div>
             <Link to="/home">Home</Link>
-            <Link to="/dict">Shortcuts</Link>
+            <Link to="/bricks">Shortcuts</Link>
             <p>New shortuct item</p>
             <p>
                 <span>shortuct</span>
@@ -38,4 +39,4 @@ function DictItemNew() {
             <span>dsafa</span>
         </div>)
 }
-export default DictItemNew
+export default BricktemNew

@@ -6,8 +6,8 @@ import { AuthProvider } from './Session/AuthContext'
 
 
 import Home from './Components/Home'
-import DictList from './Components/DictList';
-import DictItemNew from './Components/DictItemNew'
+import BrickList from './Components/BrickList';
+import BricktemNew from './Components/BricktemNew'
 
 function App() {
   return (
@@ -18,8 +18,8 @@ function App() {
             <Route path='/login' element={<Login />} />
             <Route path='/' element={<Home />} />
             <Route path='/home' element={<Home />} />
-            <Route path='/dict' element={<DictList />} />
-            <Route path='/dict/new' element={<DictItemNew />} />
+            <Route path='/bricks' element={<BrickList />} />
+            <Route path='/bricks/new' element={<BricktemNew />} />
           </Routes>
         </BrowserRouter>
       </div>
