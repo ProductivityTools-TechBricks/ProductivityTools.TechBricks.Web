@@ -49,8 +49,11 @@ function BrickList() {
             <span>BrickList</span>
             <Link to="/home">Home</Link>
             <Link to="/bricks/new">New</Link>
+            <Link to="/pellet/new">New Pellet</Link>
+            <p></p>
             <div class="parent">
                 <div clas='left'>
+                    Pellets:
                     {renderMenu()}
                 </div>
                 <div class='right'>
