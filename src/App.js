@@ -8,7 +8,7 @@ import { AuthProvider } from './Session/AuthContext'
 import Home from './Components/Home'
 import BrickList from './Components/BrickList';
 import BricktemNew from './Components/BricktemNew'
-import PalletItemNew from './Components/PaletteItemNew';
+import PalletItemNew from './Components/PalettItemNew';
 
 
 function App() {

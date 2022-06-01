@@ -10,10 +10,12 @@ async function invokeCall(user, call) {
     return response;
 }
 
-async function addPallet(user, data) {
+async function addPallet(user, palletName, palletOwners) {
 
     let payload = {
-        name: data
+        name: palletName,
+        owners:palletOwners
+
     }
 
     let call = async (header) => {
