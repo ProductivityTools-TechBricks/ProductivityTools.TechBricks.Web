@@ -10,7 +10,7 @@ function PalletItemNew() {
     const { user } = useAuth();
     const [pallet, setPallet] = useState(null);
     const [owners, setOwners] = useState([]);
-    const [bricks, setBricks] = useState([{ 'key': 'get-costam', 'value': 'render' }])
+   // const [bricks, setBricks] = useState([{ 'key': 'get-costam', 'value': 'render' }])
 
 
     useEffect(() => {
@@ -39,8 +39,8 @@ function PalletItemNew() {
                     return (<li>{item}</li>)
                 })}
             </ul>
-            <p>Bricks:</p>
-            <Bricks bricks={bricks} setBricks={setBricks}></Bricks>
+            {/* <p>Bricks:</p>
+            <Bricks bricks={bricks} setBricks={setBricks}></Bricks> */}
             <hr></hr>
             <button onClick={addPallet}>Add Pellet</button>
 

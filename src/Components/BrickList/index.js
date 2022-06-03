@@ -7,14 +7,14 @@ import { useAuth } from '../../Session/AuthContext.js'
 
 function BrickList() {
     const [dict, setDict] = useState([])
-    const [selectedCategory, setSelectedCategory] = useState([])
+    const [selectedPallet, setSelectedPallet] = useState([])
 
     const { user } = useAuth();
 
     useEffect(() => {
         const fetchData = async () => {
             console.log("fetch data")
-            const r = await apiService.getShortcuts(user);
+            const r = await apiService.getPallets(user);
             if (r != null) {
                 setDict(r);
                 console.log(r);
@@ -25,10 +25,12 @@ function BrickList() {
 
 
     const categoryClick = (e, documentId) => {
+        console.log(categoryClick)
         console.log(e);
+        console.log(documentId)
         let x = dict.find(x => x.document_id == documentId);
         console.log(x);
-        setSelectedCategory(x);
+        setSelectedPallet(x);
     }
 
     const renderMenu = () => {
@@ -39,7 +41,7 @@ function BrickList() {
 
     const renderBrickItems = () => {
         return (<div>
-            {selectedCategory && selectedCategory.data && selectedCategory.data.map(x => { return (<BrickItem data={x}></BrickItem>) })}
+            {selectedPallet && selectedPallet.bricks && selectedPallet.bricks.map(x => { return (<BrickItem bricks={x}></BrickItem>) })}
             
         </div>)
     }
