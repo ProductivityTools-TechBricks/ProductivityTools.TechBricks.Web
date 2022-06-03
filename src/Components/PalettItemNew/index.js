@@ -42,7 +42,7 @@ function PalletItemNew() {
             {/* <p>Bricks:</p>
             <Bricks bricks={bricks} setBricks={setBricks}></Bricks> */}
             <hr></hr>
-            <button onClick={addPallet}>Add Pellet</button>
+            <button onClick={addPallet}>Add Pallet</button>
 
         </div>
     )

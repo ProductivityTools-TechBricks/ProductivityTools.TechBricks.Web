@@ -15,11 +15,11 @@ async function addPallet(user, palletName, palletOwners) {
     let payload = {
         name: palletName,
         owners: palletOwners,
-        bricks:[{key:'key',value:'fds'}]
+        bricks:[{id:'fdsafasfa',key:'key',value:'fds'}]
     }
 
     let call = async (header) => {
-        const response = await axios.post(`${config.PATH_BASE}\pallet`, payload, header)
+        const response = await axios.post(`${config.PATH_BASE}pallet`, payload, header)
         return response.data;
     }
 
@@ -33,12 +33,12 @@ async function addBrick(user, data) {
     // let brick = {
     //     name: "Office"
     // }
-    const response = await axios.post(`${config.PATH_BASE}\Brick`, data, header)
+    const response = await axios.post(`${config.PATH_BASE}brick`, data, header)
 }
 
 async function getPallets(user) {
     let call = async (header) => {
-        const response = await axios.get(`${config.PATH_BASE}\pallet`, header);
+        const response = await axios.get(`${config.PATH_BASE}pallet`, header);
         return response.data;
     }
     return invokeCall(user, call)
@@ -53,7 +53,7 @@ async function getShortcuts(user) {
         headers: { Authorization: `Bearer ${user.accessToken}` }
     }
 
-    const response = await axios.get(`${config.PATH_BASE}\Card`, header);
+    const response = await axios.get(`${config.PATH_BASE}card`, header);
     //const response = await axios.get(`${config.PATH_BASE}\Card`);
     return response.data;
 }
@@ -62,7 +62,7 @@ async function addShortuct(user, shortuct) {
     const header = {
         headers: { Authorization: `Bearer ${user.accessToken}` }
     }
-    const response = await axios.post(`${config.PATH_BASE}\Card`, shortuct, header)
+    const response = await axios.post(`${config.PATH_BASE}card`, shortuct, header)
     return response.data;
 }
 
