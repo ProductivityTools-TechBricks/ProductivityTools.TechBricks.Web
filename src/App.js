@@ -22,7 +22,7 @@ function App() {
             <Route path='/home' element={<Home />} />
             <Route path='/bricks' element={<BrickList />} />
             <Route path='/bricks/new' element={<BricktemNew />} />
-            <Route path='/pallet/new' element={<PalletItemNew />} />
+            <Route path='/pallets/new' element={<PalletItemNew />} />
           </Routes>
         </BrowserRouter>
       </div>

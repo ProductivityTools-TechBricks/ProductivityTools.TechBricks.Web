@@ -15,14 +15,22 @@ async function addPallet(user, palletName, palletOwners) {
     let payload = {
         name: palletName,
         owners: palletOwners,
-        bricks:[{id:'fdsafasfa',key:'key',value:'fds'}]
+        bricks: [{ id: 'fdsafasfa', key: 'key', value: 'fds' }]
     }
 
     let call = async (header) => {
-        const response = await axios.post(`${config.PATH_BASE}pallet`, payload, header)
+        const response = await axios.put(`${config.PATH_BASE}pallet`, payload, header)
         return response.data;
     }
 
+    return invokeCall(user, call);
+}
+
+async function updatePallet(user, pallet) {
+    let call = async (header) => {
+        const response = await axios.post(`${config.PATH_BASE}pallet`, pallet, header)
+        return response.data;
+    }
     return invokeCall(user, call);
 }
 
@@ -30,11 +38,10 @@ async function addBrick(user, data) {
     const header = {
         headers: { Authorization: `Bearer ${user.accessToken}` }
     }
-    // let brick = {
-    //     name: "Office"
-    // }
     const response = await axios.post(`${config.PATH_BASE}brick`, data, header)
 }
+
+
 
 async function getPallets(user) {
     let call = async (header) => {
@@ -70,6 +77,7 @@ async function addShortuct(user, shortuct) {
 
 export {
     addPallet,
+    updatePallet,
     getPallets,
     getShortcuts,
     addShortuct,

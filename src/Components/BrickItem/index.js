@@ -15,7 +15,6 @@ function BrickItem(props) {
         if (e.target.name == 'value') {
             props.updateBrick(props.brick.id, props.brick.key, e.target.value)
         }
-
     }
 
 

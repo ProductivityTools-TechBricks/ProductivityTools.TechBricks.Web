@@ -34,20 +34,24 @@ function BrickList() {
 
     }
 
-    const updateBrick=(id,key,value)=>{
+    const updateBrick = (id, key, value) => {
         console.log("update brick")
-        debugger;
-        let sp={...selectedPallet}
-        let item=sp.bricks.find(x=>x.id==id);
-        item.key=key;
-        item.value=value;
+        let sp = { ...selectedPallet }
+        let item = sp.bricks.find(x => x.id == id);
+        item.key = key;
+        item.value = value;
         setSelectedPallet(sp);
 
-        let p=[...pallets]
-        let pallet=p.find(x=>x.document_id==selectedPallet.document_id);
-        pallet.bricks=selectedPallet.bricks;
+        let p = [...pallets]
+        let pallet = p.find(x => x.document_id == selectedPallet.document_id);
+        pallet.bricks = selectedPallet.bricks;
         setPallets(p);
-        
+
+    }
+
+    const savePallet = () => {
+        console.log("savePallet");
+        apiService.updatePallet(user, selectedPallet);
     }
 
     const renderMenu = () => {
@@ -59,7 +63,7 @@ function BrickList() {
     const renderBrickItems = () => {
         return (<div>
             {selectedPallet && selectedPallet.bricks && selectedPallet.bricks.map(x => { return (<BrickItem brick={x} updateBrick={updateBrick}></BrickItem>) })}
-            
+            <button onClick={savePallet}>Save pallet</button>
         </div>)
     }
 
