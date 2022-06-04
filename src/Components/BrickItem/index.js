@@ -7,8 +7,14 @@ function BrickItem(props) {
     const [mode, setMode] = useState('readonly')
 
     useEffect(() => {
-        setMode('readonly')
-    }, [props.readonlyIndicator])
+        console.log(props.editableFields);
+        if (props.editableFields.includes(props.brick.id)) {
+            setMode('editable')
+        }
+        else {
+            setMode('readonly')
+        }
+    }, [props.editableFields])
 
     const onChange = (e, k) => {
         console.log("onChange Bricks")

@@ -3,12 +3,13 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import BrickItem from '../BrickItem'
 import { useAuth } from '../../Session/AuthContext.js'
+import { v4 as uuidv4 } from 'uuid'
 
 
 function BrickList() {
     const [pallets, setPallets] = useState([])
     const [selectedPallet, setSelectedPallet] = useState([])
-    const [readonlyIndicator, setRedonlyIndicator] = useState(0);
+    const [editableFields, setEditableFields] = useState([]);
 
     const { user } = useAuth();
 
@@ -35,8 +36,7 @@ function BrickList() {
 
     }
 
-    const updateSelectedPalletInPallets=()=>
-    {
+    const updateSelectedPalletInPallets = () => {
         let p = [...pallets]
         let pallet = p.find(x => x.document_id == selectedPallet.document_id);
         pallet.bricks = selectedPallet.bricks;
@@ -53,19 +53,23 @@ function BrickList() {
 
         updateSelectedPalletInPallets();
     }
-    const addBrick=()=>{
+    const addBrick = () => {
         console.log("add brick")
-        let sp={...selectedPallet}
-        sp.bricks.push({id:"fdsafsda",key:"edfasfsda",value:"fdsafsaf"});
+        let sp = { ...selectedPallet }
+        let newuuid=uuidv4();
+        sp.bricks.push({ id:newuuid , key: "edfasfsda", value: "fdsafsaf" });
+
         setSelectedPallet(sp);
-        
+
+        setEditableFields(editableFields => [...editableFields, newuuid])
+
         updateSelectedPalletInPallets();
     }
 
     const savePallet = () => {
         console.log("savePallet");
         apiService.updatePallet(user, selectedPallet);
-        setRedonlyIndicator(readonlyIndicator + 1);
+        setEditableFields([]);
     }
 
 
@@ -79,7 +83,7 @@ function BrickList() {
     const renderBrickItems = () => {
         return (<div>
             {selectedPallet && selectedPallet.bricks && selectedPallet.bricks.map(x => {
-                return (<BrickItem brick={x} updateBrick={updateBrick} readonlyIndicator={readonlyIndicator}></BrickItem>)
+                return (<BrickItem brick={x} updateBrick={updateBrick} editableFields={editableFields}></BrickItem>)
             })}
             <button onClick={savePallet}>Save pallet</button>
             <button onClick={addBrick}>Add brick</button>
