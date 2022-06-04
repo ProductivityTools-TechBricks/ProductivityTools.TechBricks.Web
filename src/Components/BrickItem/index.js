@@ -1,10 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function BrickItem(props) {
     console.log("BrickItem");
     console.log(props)
 
     const [mode, setMode] = useState('readonly')
+
+    useEffect(() => {
+        setMode('readonly')
+    }, [props.readonlyIndicator])
 
     const onChange = (e, k) => {
         console.log("onChange Bricks")
@@ -35,7 +39,6 @@ function BrickItem(props) {
                     <input type="text" name="key" value={props.brick.key} onChange={onChange}></input>
                     <input type="text" name="value" value={props.brick.value} onChange={onChange}></input>
                 </p>
-                <button onClick={() => setMode('readonly')}>save</button>
             </div>
         )
     }

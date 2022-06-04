@@ -8,6 +8,7 @@ import { useAuth } from '../../Session/AuthContext.js'
 function BrickList() {
     const [pallets, setPallets] = useState([])
     const [selectedPallet, setSelectedPallet] = useState([])
+    const [readonlyIndicator, setRedonlyIndicator] = useState(0);
 
     const { user } = useAuth();
 
@@ -34,6 +35,14 @@ function BrickList() {
 
     }
 
+    const updateSelectedPalletInPallets=()=>
+    {
+        let p = [...pallets]
+        let pallet = p.find(x => x.document_id == selectedPallet.document_id);
+        pallet.bricks = selectedPallet.bricks;
+        setPallets(p);
+    }
+
     const updateBrick = (id, key, value) => {
         console.log("update brick")
         let sp = { ...selectedPallet }
@@ -42,17 +51,24 @@ function BrickList() {
         item.value = value;
         setSelectedPallet(sp);
 
-        let p = [...pallets]
-        let pallet = p.find(x => x.document_id == selectedPallet.document_id);
-        pallet.bricks = selectedPallet.bricks;
-        setPallets(p);
-
+        updateSelectedPalletInPallets();
+    }
+    const addBrick=()=>{
+        console.log("add brick")
+        let sp={...selectedPallet}
+        sp.bricks.push({id:"fdsafsda",key:"edfasfsda",value:"fdsafsaf"});
+        setSelectedPallet(sp);
+        
+        updateSelectedPalletInPallets();
     }
 
     const savePallet = () => {
         console.log("savePallet");
         apiService.updatePallet(user, selectedPallet);
+        setRedonlyIndicator(readonlyIndicator + 1);
     }
+
+
 
     const renderMenu = () => {
         return (<ul>{pallets.map(x => {
@@ -62,8 +78,11 @@ function BrickList() {
 
     const renderBrickItems = () => {
         return (<div>
-            {selectedPallet && selectedPallet.bricks && selectedPallet.bricks.map(x => { return (<BrickItem brick={x} updateBrick={updateBrick}></BrickItem>) })}
+            {selectedPallet && selectedPallet.bricks && selectedPallet.bricks.map(x => {
+                return (<BrickItem brick={x} updateBrick={updateBrick} readonlyIndicator={readonlyIndicator}></BrickItem>)
+            })}
             <button onClick={savePallet}>Save pallet</button>
+            <button onClick={addBrick}>Add brick</button>
         </div>)
     }
 
