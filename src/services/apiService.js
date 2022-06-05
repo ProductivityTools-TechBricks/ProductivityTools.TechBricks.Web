@@ -15,7 +15,7 @@ async function addPallet(user, palletName, palletOwners) {
     let payload = {
         name: palletName,
         owners: palletOwners,
-        bricks: [{ id: 'fdsafasfa', key: 'key', value: 'fds' }]
+        bricks: []
     }
 
     let call = async (header) => {

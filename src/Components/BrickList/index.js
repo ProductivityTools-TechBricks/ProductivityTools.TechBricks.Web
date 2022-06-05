@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 function BrickList() {
     const [pallets, setPallets] = useState([])
-    const [selectedPallet, setSelectedPallet] = useState([])
+    const [selectedPallet, setSelectedPallet] = useState(null)
     const [editableFields, setEditableFields] = useState([]);
 
     const { user } = useAuth();
@@ -53,15 +53,19 @@ function BrickList() {
 
         updateSelectedPalletInPallets();
     }
+
+    const addEditableField=(newuuid)=>{
+        setEditableFields(editableFields => [...editableFields, newuuid])
+    }
+
     const addBrick = () => {
         console.log("add brick")
         let sp = { ...selectedPallet }
-        let newuuid=uuidv4();
-        sp.bricks.push({ id:newuuid , key: "edfasfsda", value: "fdsafsaf" });
+        let newuuid = uuidv4();
+        sp.bricks.push({ id: newuuid, key: "edfasfsda", value: "fdsafsaf" });
 
         setSelectedPallet(sp);
-
-        setEditableFields(editableFields => [...editableFields, newuuid])
+        addEditableField(newuuid);
 
         updateSelectedPalletInPallets();
     }
@@ -81,13 +85,18 @@ function BrickList() {
     }
 
     const renderBrickItems = () => {
-        return (<div>
-            {selectedPallet && selectedPallet.bricks && selectedPallet.bricks.map(x => {
-                return (<BrickItem brick={x} updateBrick={updateBrick} editableFields={editableFields}></BrickItem>)
-            })}
-            <button onClick={savePallet}>Save pallet</button>
-            <button onClick={addBrick}>Add brick</button>
-        </div>)
+        if (selectedPallet) {
+            return (<div>
+                {selectedPallet.bricks && selectedPallet.bricks.map(x => {
+                    return (<BrickItem brick={x} updateBrick={updateBrick} editableFields={editableFields} addEditableField={addEditableField}></BrickItem>)
+                })}
+                <button onClick={savePallet}>Save pallet</button>
+                <button onClick={addBrick}>Add brick</button>
+            </div>)
+        }
+        else {
+            return (<span>Select pallet</span>)
+        }
     }
 
     return (

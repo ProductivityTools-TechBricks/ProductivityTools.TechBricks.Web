@@ -7,12 +7,16 @@ function BrickItem(props) {
     const [mode, setMode] = useState('readonly')
 
     useEffect(() => {
+        console.log("useEffect BrickItem")
         console.log(props.editableFields);
+        console.log(props.brick.id);
         if (props.editableFields.includes(props.brick.id)) {
             setMode('editable')
+            console.log("seteditable")
         }
         else {
             setMode('readonly')
+            console.log("setreadonly")
         }
     }, [props.editableFields])
 
@@ -29,16 +33,18 @@ function BrickItem(props) {
 
 
     const renderReadonly = () => {
+        console.log("renderreadonly: ", props.brick.id)
         return (
             <div>
                 <p> {props.brick.key} - {props.brick.value}</p >
-                <button onClick={() => setMode('editable')}>edit</button>
+                <button onClick={() => props.addEditableField(props.brick.id)}>edit</button>
             </div>
         )
     }
 
 
     const renderEditable = () => {
+        console.log("redner editable: ", props.brick.id)
         return (
             <div>
                 <p>
