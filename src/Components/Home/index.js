@@ -14,7 +14,7 @@ function Home(){
 
 
     return(<div>
-        <p>welcome on tech bricks</p>
+        <p>welcome on tech bricks2</p>
         <p>{auth?.currentUser?.displayName}</p>
         <p>{auth?.currentUser?.email}</p>
         <p><button onClick={logoutAction}>logout</button></p>

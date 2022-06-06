@@ -62,7 +62,7 @@ function BrickList() {
         console.log("add brick")
         let sp = { ...selectedPallet }
         let newuuid = uuidv4();
-        sp.bricks.push({ id: newuuid, key: "edfasfsda", value: "fdsafsaf" });
+        sp.bricks.push({ id: newuuid, key: "", value: "" });
 
         setSelectedPallet(sp);
         addEditableField(newuuid);
