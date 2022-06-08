@@ -7,7 +7,7 @@ import { AuthProvider } from './Session/AuthContext'
 
 import Home from './Components/Home'
 import BrickList from './Components/BrickList';
-import BricktemNew from './Components/BricktemNew'
+import BrickItem from './Components/BrickItem'
 import PalletItemNew from './Components/PalettItemNew';
 
 
@@ -18,13 +18,11 @@ function App() {
         <BrowserRouter >
           <Routes>
             <Route path='/login' element={<Login />} />
-            <Route path=":username" element={<BrickList/>} />
-            <Route path='/' element={<Home />} >
-            </Route>
-            <Route path='/home' element={<Home />} />
+            <Route path=":username" element={<BrickList />} />
+            <Route path='/' element={<Home />} />
             <Route path='/bricks' element={<BrickList />} />
-            <Route path='/bricks/new' element={<BricktemNew />} />
-            <Route path='/pallets/new' element={<PalletItemNew />} />
+            <Route path='/bricks/new' element={<BrickItem />} />
+            <Route path='/pallets/new' element={<PalletItemNew />} /> 
           </Routes>
         </BrowserRouter>
       </div>

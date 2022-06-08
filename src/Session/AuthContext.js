@@ -7,13 +7,6 @@ const AuthContext = createContext({
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
-    useEffect(() => {
-        if (user) {
-            const token = user.getIdToken();
-            console.log("GetIdToken from user")
-            setUser(user);
-        }
-    }, []);
 
     useEffect(() => {
         return auth.onIdTokenChanged(async (user) => {

@@ -113,16 +113,16 @@ function BrickList() {
         <div>
             <p>BrickList</p>
             <p>{params.username}</p>
-            <Link to="/home">Home</Link>
+            <Link to="/">Home</Link>
             <Link to="/pallets/new">New</Link>
             <Link to="/pallets/new">New Pellet</Link>
             <p></p>
-            <div class="parent">
-                <div clas='left'>
+            <div className="parent">
+                <div className='left'>
                     Pellets:
                     {renderMenu()}
                 </div>
-                <div class='right'>
+                <div className='right'>
                     {renderBrickItems()}
                 </div>
             </div>
