@@ -1,25 +1,34 @@
-import { createContext, useEffect, useContext,useState } from 'react';
-import {auth} from './firebase.js'
+import { createContext, useEffect, useContext, useState } from 'react';
+import { auth } from './firebase.js'
 
- const AuthContext = createContext({
-     user: null
- })
+const AuthContext = createContext({
+    user: null
+})
 
-export function AuthProvider({children}) {
+export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     useEffect(() => {
+        if (user) {
+            const token = user.getIdToken();
+            console.log("GetIdToken from user")
+            setUser(user);
+        }
+    }, []);
+
+    useEffect(() => {
         return auth.onIdTokenChanged(async (user) => {
-             if (!user) {
-                 console.log("Missing user");
-                 setUser(null);                 
-             }
-             else {
-                 const token = await user.getIdToken();
-                 setUser(user);
-                 console.log("Token")
-                 console.log(token);
-             }
-         })
+            if (!user) {
+                console.log("Missing user");
+                setUser(null);
+            }
+            else {
+                debugger;
+                const token = await user.getIdToken();
+                setUser(user);
+                console.log("AuthProvider\Token")
+                console.log(token);
+            }
+        })
     }, []);
 
     useEffect(() => {
@@ -27,7 +36,7 @@ export function AuthProvider({children}) {
             const user = auth.currentUser;
             if (user) await user.getIdToken(true);
             console.log("refresh token")
-        }, 10* 60 * 1000);
+        }, 10 * 60 * 1000);
         return () => clearInterval(handle);
     }, []);
 
@@ -36,5 +45,6 @@ export function AuthProvider({children}) {
     )
 }
 export const useAuth = () => {
+    debugger;
     return useContext(AuthContext);
-  };
+};

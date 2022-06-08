@@ -4,6 +4,9 @@ import { Link } from 'react-router-dom'
 import BrickItem from '../BrickItem'
 import { useAuth } from '../../Session/AuthContext.js'
 import { v4 as uuidv4 } from 'uuid'
+import { auth } from '../../Session/firebase.js' 
+import { useParams } from "react-router-dom";
+
 
 
 function BrickList() {
@@ -13,14 +16,21 @@ function BrickList() {
 
     const { user } = useAuth();
 
+
+    let params = useParams();
+
     useEffect(() => {
         const fetchData = async () => {
             console.log("fetch data")
-            const r = await apiService.getPallets(user);
-            if (r != null) {
-                setPallets(r);
-                console.log(r);
-            }
+            auth.onAuthStateChanged(async function(user) {
+                if (user) {
+                    const r = await apiService.getPallets(user);
+                    if (r != null) {
+                        setPallets(r);
+                        console.log(r);
+                    }
+                }
+              });
         }
         fetchData();
     }, []);
@@ -101,7 +111,8 @@ function BrickList() {
 
     return (
         <div>
-            <span>BrickList</span>
+            <p>BrickList</p>
+            <p>{params.username}</p>
             <Link to="/home">Home</Link>
             <Link to="/pallets/new">New</Link>
             <Link to="/pallets/new">New Pellet</Link>

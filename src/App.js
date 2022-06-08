@@ -18,7 +18,9 @@ function App() {
         <BrowserRouter >
           <Routes>
             <Route path='/login' element={<Login />} />
-            <Route path='/' element={<Home />} />
+            <Route path=":username" element={<BrickList/>} />
+            <Route path='/' element={<Home />} >
+            </Route>
             <Route path='/home' element={<Home />} />
             <Route path='/bricks' element={<BrickList />} />
             <Route path='/bricks/new' element={<BricktemNew />} />
