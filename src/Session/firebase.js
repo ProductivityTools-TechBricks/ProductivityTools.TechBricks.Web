@@ -17,12 +17,12 @@ const devfirebaseConfig = {
 };
 
 const prodfirebaseConfig = {
-    apiKey: "AIzaSyDLNVk2JX68cg3y_gLXmWrqnw11dHgsNHc",
-    authDomain: "ptbricksprod.firebaseapp.com",
-    projectId: "ptbricksprod",
-    storageBucket: "ptbricksprod.appspot.com",
-    messagingSenderId: "999559134476",
-    appId: "1:999559134476:web:b082d52f711bf40defdd29"
+    apiKey: "AIzaSyAxi8kuV5eGHQryz8RTmJrq6LNDk65Gbwk",
+    authDomain: "pttechbricksprod.firebaseapp.com",
+    projectId: "pttechbricksprod",
+    storageBucket: "pttechbricksprod.appspot.com",
+    messagingSenderId: "211819962172",
+    appId: "1:211819962172:web:b11f994d6d86dec2d2c839"
 };
 
 

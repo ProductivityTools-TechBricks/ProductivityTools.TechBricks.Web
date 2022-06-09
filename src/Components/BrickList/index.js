@@ -113,8 +113,7 @@ function BrickList() {
         <div>
             <p>BrickList</p>
             <p>{params.username}</p>
-            <Link to="/">Home</Link>
-            <Link to="/pallets/new">New</Link>
+            <Link to="/">Home</Link> 
             <Link to="/pallets/new">New Pellet</Link>
             <p></p>
             <div className="parent">

@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom'
 
+import { getUserName } from '../../Tools/usertools'
+
 import * as apiService from '../../services/apiService'
 import { useAuth } from '../../Session/AuthContext'
-import Bricks from './Bricks.js'
 
 function PalletItemNew() {
 
     const { user } = useAuth();
     const [pallet, setPallet] = useState(null);
     const [owners, setOwners] = useState([]);
-   // const [bricks, setBricks] = useState([{ 'key': 'get-costam', 'value': 'render' }])
 
 
     useEffect(() => {
@@ -30,7 +30,7 @@ function PalletItemNew() {
 
     return (
         <div>
-            <Link to="/bricks">Bricks</Link>
+            <Link to={getUserName()}>List</Link>
             <p>Name:</p>
             <input type="text" onChange={pelletNameChange}></input>
             <p>Owners:</p>
