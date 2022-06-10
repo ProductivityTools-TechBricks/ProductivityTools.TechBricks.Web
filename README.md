@@ -41,6 +41,8 @@ firebase deploy
 
 ### Treating warnings as erros issue during github build
 
+By default github treats warning as errors and fails during build. For our projects let us ignore it with ```env: CI``` environment variable
+
 ```
 name: Deploy to Firebase Hosting on PR
 env:
