@@ -38,6 +38,5 @@ export function AuthProvider({ children }) {
     )
 }
 export const useAuth = () => {
-    debugger;
     return useContext(AuthContext);
 };

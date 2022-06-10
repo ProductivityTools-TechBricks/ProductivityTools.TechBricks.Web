@@ -18,3 +18,26 @@
 
 }
 
+.p_wrap{
+    white-space: pre-line;
+}
+
+.listLeft{
+    width: 200px;
+    float:left;
+    background-color: aqua;
+}
+
+.listRight{
+    margin-left: 200px;
+    background-color:lightblue
+}
+
+.inputDivContainer
+{
+  display:flex;
+  align-items: top;
+}
+.keyInput{
+
+}

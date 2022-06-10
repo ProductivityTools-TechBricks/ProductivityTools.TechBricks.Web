@@ -35,8 +35,9 @@ function BrickItem(props) {
     const renderReadonly = () => {
         console.log("renderreadonly: ", props.brick.id)
         return (
-            <div>
-                <p> {props.brick.key} - {props.brick.value}</p >
+            <div >
+                <div className="listLeft">{props.brick.key}</div>
+                <div className="listRight"><span className="p_wrap">{props.brick.value}</span></div>
                 <button onClick={() => props.addEditableField(props.brick.id)}>edit</button>
             </div>
         )
@@ -46,11 +47,9 @@ function BrickItem(props) {
     const renderEditable = () => {
         console.log("redner editable: ", props.brick.id)
         return (
-            <div>
-                <p>
-                    <input type="text" name="key" value={props.brick.key} onChange={onChange}></input>
-                    <input type="text" name="value" value={props.brick.value} onChange={onChange}></input>
-                </p>
+            <div className="inputDivContainer">
+                    <input className="keyInput" type="text" name="key" value={props.brick.key} onChange={onChange}></input>
+                    <textarea name="value" cols="100" rows="5"  value={props.brick.value} onChange={onChange}></textarea>
             </div>
         )
     }
