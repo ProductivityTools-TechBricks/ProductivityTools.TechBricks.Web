@@ -3,7 +3,7 @@ const dev = {
 }
 
 const prod = {
-    PATH_BASE: 'https://techbricksapi-ph3pkiosba-uc.a.run.app/'
+    PATH_BASE: 'https://techbricksapi-iigprl63zq-uc.a.run.app'
 }
 
 export const config = process.env.NODE_ENV === 'development' ? dev : prod;
