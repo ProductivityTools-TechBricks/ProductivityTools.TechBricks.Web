@@ -14,7 +14,7 @@ function PalletItemNew() {
 
 
     useEffect(() => {
-        setOwners([user.email])
+        setOwners([getUserName()])
     }, [])
 
     const addPallet = () => {

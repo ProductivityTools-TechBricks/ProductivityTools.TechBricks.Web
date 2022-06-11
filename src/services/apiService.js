@@ -43,9 +43,13 @@ async function addBrick(user, data) {
 
 
 
-async function getPallets(user) {
+async function getPallets(user,queryowner) {
+    console.log(user);
+    let data = {
+        owner: queryowner
+    }
     let call = async (header) => {
-        const response = await axios.get(`${config.PATH_BASE}pallet`, header);
+        const response = await axios.get(`${config.PATH_BASE}pallet`, { params: data  }, header);
         return response.data;
     }
     return invokeCall(user, call)

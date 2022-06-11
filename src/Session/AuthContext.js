@@ -15,7 +15,6 @@ export function AuthProvider({ children }) {
                 setUser(null);
             }
             else {
-                debugger;
                 const token = await user.getIdToken();
                 setUser(user);
                 console.log("AuthProvider\Token")
