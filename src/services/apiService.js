@@ -3,9 +3,10 @@ import { config } from '../Consts'
 import { auth } from "../Session/firebase"
 
 async function invokeCall(user, call) {
-    const header = {
-        headers: { Authorization: `Bearer ${user.accessToken}` }
-    }
+
+    let token = localStorage.getItem('token')
+    console.log("token from localstorage", token)
+    const header = { Authorization: `Bearer ${token}` }
     const response = call(header);
     return response;
 }
@@ -17,7 +18,7 @@ async function addPallet(user, palletName, palletOwners) {
         owners: palletOwners,
         bricks: []
     }
-
+    
     let call = async (header) => {
         const response = await axios.put(`${config.PATH_BASE}pallet`, payload, header)
         return response.data;
@@ -43,13 +44,16 @@ async function addBrick(user, data) {
 
 
 
-async function getPallets(user,queryowner) {
+async function getPallets(user, queryowner) {
     console.log(user);
     let data = {
         owner: queryowner
     }
     let call = async (header) => {
-        const response = await axios.get(`${config.PATH_BASE}pallet`, { params: data  }, header);
+
+        //const response = await axios.get(`${config.PATH_BASE}pallet`, { params: data  }, header);
+       // debugger;
+        const response = await axios.get(`${config.PATH_BASE}pallet`, { params: data, headers: header });
         return response.data;
     }
     return invokeCall(user, call)

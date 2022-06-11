@@ -17,6 +17,7 @@ export function AuthProvider({ children }) {
             else {
                 const token = await user.getIdToken();
                 setUser(user);
+                localStorage.setItem("token", token);
                 console.log("AuthProvider\Token")
                 console.log(token);
             }
@@ -26,8 +27,12 @@ export function AuthProvider({ children }) {
     useEffect(() => {
         const handle = setInterval(async () => {
             const user = auth.currentUser;
-            if (user) await user.getIdToken(true);
-            console.log("refresh token")
+            if (user) {
+                console.log("refresh token")
+                await user.getIdToken(true);
+                console.log(user);
+            }
+            
         }, 10 * 60 * 1000);
         return () => clearInterval(handle);
     }, []);
