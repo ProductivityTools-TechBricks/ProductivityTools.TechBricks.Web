@@ -32,7 +32,7 @@ function BrickList() {
             //     }
             //   });
             console.log(params);
-            const r = await apiService.getPallets(user,params.username);
+            const r = await apiService.getPallets(user, params.username);
             if (r != null) {
                 setPallets(r);
                 console.log(r);
@@ -108,7 +108,8 @@ function BrickList() {
                 })}
                 <button onClick={savePallet}>Save pallet</button>
                 <button onClick={addBrick}>Add brick</button>
-            </div>)
+
+            </div >)
         }
         else {
             return (<span>Select pallet</span>)
@@ -118,13 +119,13 @@ function BrickList() {
     return (
         <div>
             <p>BrickList</p>
-            <p>{params.username}</p>
+            <p>User:</p>
             <Link to="/">Home</Link>
             <Link to="/pallets/new">New Pellet</Link>
             <p></p>
             <div className="parent">
                 <div className='left'>
-                    Pellets:
+                    <span><b>{params.username}</b> pellets: </span>
                     {renderMenu()}
                 </div>
                 <div className='right'>

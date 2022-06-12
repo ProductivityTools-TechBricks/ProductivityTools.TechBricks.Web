@@ -1,10 +1,18 @@
 import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { useAuth } from '../../Session/AuthContext.js'
+import { getUserName } from '../../Tools/usertools'
+
 
 function BrickItem(props) {
     console.log("BrickItem");
     console.log(props)
 
     const [mode, setMode] = useState('readonly')
+    const { user } = useAuth();
+    let params = useParams();
+
+
 
     useEffect(() => {
         console.log("useEffect BrickItem")
@@ -31,6 +39,16 @@ function BrickItem(props) {
         }
     }
 
+    const renderEditButton = () => {
+        console.log("renderEditbutton", user);
+        let userName = getUserName();
+        let paramsUserName = params.username
+        //if (userName=paramsUserName) {
+        if (true) {
+            return (<button onClick={() => props.addEditableField(props.brick.id)}>edit</button>)
+        }
+    }
+
 
     const renderReadonly = () => {
         console.log("renderreadonly: ", props.brick.id)
@@ -38,7 +56,7 @@ function BrickItem(props) {
             <div >
                 <div className="listLeft">{props.brick.key}</div>
                 <div className="listRight"><span className="p_wrap">{props.brick.value}</span></div>
-                <button onClick={() => props.addEditableField(props.brick.id)}>edit</button>
+                {renderEditButton()}
             </div>
         )
     }
@@ -48,8 +66,8 @@ function BrickItem(props) {
         console.log("redner editable: ", props.brick.id)
         return (
             <div className="inputDivContainer">
-                    <input className="keyInput" type="text" name="key" value={props.brick.key} onChange={onChange}></input>
-                    <textarea name="value" cols="100" rows="5"  value={props.brick.value} onChange={onChange}></textarea>
+                <input className="keyInput" type="text" name="key" value={props.brick.key} onChange={onChange}></input>
+                <textarea name="value" cols="100" rows="5" value={props.brick.value} onChange={onChange}></textarea>
             </div>
         )
     }
