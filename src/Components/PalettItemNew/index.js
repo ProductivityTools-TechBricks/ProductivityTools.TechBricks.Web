@@ -30,7 +30,7 @@ function PalletItemNew() {
 
     return (
         <div>
-            <Link to={getUserName()}>List</Link>
+            <Link to="/{getUserName()}">List</Link>
             <p>Name:</p>
             <input type="text" onChange={pelletNameChange}></input>
             <p>Owners:</p>

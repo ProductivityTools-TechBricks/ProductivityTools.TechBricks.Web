@@ -6,6 +6,8 @@ import { useAuth } from '../../Session/AuthContext.js'
 import { v4 as uuidv4 } from 'uuid'
 import { auth } from '../../Session/firebase.js'
 import { useParams } from "react-router-dom";
+import {getUserName} from '../../Tools/usertools'
+
 
 
 
@@ -119,13 +121,13 @@ function BrickList() {
     return (
         <div>
             <p>BrickList</p>
-            <p>User:</p>
+            <p>Logged user: {getUserName()}</p>
             <Link to="/">Home</Link>
-            <Link to="/pallets/new">New Pellet</Link>
+            <Link to="/pallets/new">New Pallet</Link>
             <p></p>
             <div className="parent">
                 <div className='left'>
-                    <span><b>{params.username}</b> pellets: </span>
+                    <span><b>{params.username}</b> pallets: </span>
                     {renderMenu()}
                 </div>
                 <div className='right'>
