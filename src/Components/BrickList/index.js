@@ -98,7 +98,8 @@ function BrickList() {
 
     const renderMenu = () => {
         return (<ul>{pallets.map(x => {
-            return (<li><Link to="#" onClick={(e) => categoryClick(e, x.document_id)} >{x.name} - {x.document_id}</Link></li>)
+            //return (<li><Link to="#" onClick={(e) => categoryClick(e, x.document_id)} >{x.name} - {x.document_id}</Link></li>)
+            return (<li><Link to="#" onClick={(e) => categoryClick(e, x.document_id)} >{x.name}</Link></li>)
         })}</ul>)
     }
 
