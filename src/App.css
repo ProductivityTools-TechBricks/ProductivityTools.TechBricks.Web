@@ -23,13 +23,12 @@
 }
 
 .listLeft{
-    width: 200px;
+    
     float:left;
     background-color: aqua;
 }
 
 .listRight{
-    margin-left: 200px;
     background-color:lightblue
 }
 
