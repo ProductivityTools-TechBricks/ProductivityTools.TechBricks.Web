@@ -4,9 +4,9 @@ import { auth } from "../Session/firebase"
 
 async function invokeCall(user, call) {
 
-    let token = localStorage.getItem('token')
+    let token = localStorage.getItem('bearer')
     console.log("token from localstorage", token)
-    const header = { Authorization: `Bearer ${token}` }
+    const header = { headers: { Authorization: `Bearer ${token}` } }
     const response = call(header);
     return response;
 }
@@ -18,7 +18,7 @@ async function addPallet(user, palletName, palletOwners) {
         owners: palletOwners,
         bricks: []
     }
-    
+
     let call = async (header) => {
         console.log("addPallet")
         console.log(header);
@@ -37,7 +37,7 @@ async function updatePallet(user, pallet) {
         console.log(pallet);
 
         //const response = await axios.post(`${config.PATH_BASE}pallet`, pallet, header)
-        const response = await axios.post(`${config.PATH_BASE}pallet`, pallet, {headers: header })
+        const response = await axios.post(`${config.PATH_BASE}pallet`, pallet, header )
         return response.data;
     }
     return invokeCall(user, call);
@@ -60,7 +60,7 @@ async function getPallets(user, queryowner) {
     let call = async (header) => {
 
         //const response = await axios.get(`${config.PATH_BASE}pallet`, { params: data  }, header);
-       // debugger;
+        // debugger;
         const response = await axios.get(`${config.PATH_BASE}pallet`, { params: data, headers: header });
         return response.data;
     }
@@ -95,7 +95,7 @@ export {
     addPallet,
     updatePallet,
     getPallets,
- //   getShortcuts,
+    //   getShortcuts,
     //addShortuct,
-  //  addBrick
+    //  addBrick
 } 
