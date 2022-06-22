@@ -4,7 +4,7 @@ import { auth } from "../Session/firebase"
 
 async function invokeCall(user, call) {
 
-    let token = localStorage.getItem('bearer')
+    let token = localStorage.getItem('token')
     console.log("token from localstorage", token)
     const header = { headers: { Authorization: `Bearer ${token}` } }
     const response = call(header);

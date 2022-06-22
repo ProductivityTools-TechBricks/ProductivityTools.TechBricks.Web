@@ -34,10 +34,13 @@ const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 const signInWithGoogle = async () => {
     try {
-        debugger;
         const res = await signInWithPopup(auth, googleProvider);
         console.log(res);
-        localStorage.setItem("token", res.user.accessToken)
+        localStorage.setItem("token", res.user.accessToken);
+
+        console.log("token validation");
+        let token = localStorage.getItem('token');
+        console.log("token from localstorage", token);
     } catch (err) {
         console.error(err);
         alert(err.message);
