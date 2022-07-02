@@ -54,7 +54,7 @@ function BrickItem(props) {
         console.log("renderreadonly: ", props.brick.id)
         return (
             <div >
-                <div className="listLeft">{props.brick.key}</div>
+                <div className="listLeft"><span className="p_wrap">{props.brick.key}</span></div>
                 <div className="listRight"><span className="p_wrap">{props.brick.value}</span></div>
                 {renderEditButton()}
             </div>
@@ -66,7 +66,7 @@ function BrickItem(props) {
         console.log("redner editable: ", props.brick.id)
         return (
             <div className="inputDivContainer">
-                <input className="keyInput" type="text" name="key" value={props.brick.key} onChange={onChange}></input>
+                <textarea className="keyInput" name="key" cols="100" rows="5" value={props.brick.key} onChange={onChange}></textarea>
                 <textarea name="value" cols="100" rows="5" value={props.brick.value} onChange={onChange}></textarea>
             </div>
         )
