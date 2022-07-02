@@ -19,7 +19,7 @@ function Home() {
 
 
     return (<div>
-        <p>Welcome on Techbricks - v.0.4</p>
+        <p>Welcome on Techbricks - v.0.5</p>
         <p>{auth?.currentUser?.displayName}</p>
         <p>{auth?.currentUser?.email}</p>
         <p><button onClick={logoutAction}>logout</button></p>
