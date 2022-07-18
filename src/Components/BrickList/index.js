@@ -6,7 +6,7 @@ import { useAuth } from '../../Session/AuthContext.js'
 import { v4 as uuidv4 } from 'uuid'
 import { auth } from '../../Session/firebase.js'
 import { useParams } from "react-router-dom";
-import {getUserName} from '../../Tools/usertools'
+import { getUserName } from '../../Tools/usertools'
 
 
 
@@ -106,9 +106,11 @@ function BrickList() {
     const renderBrickItems = () => {
         if (selectedPallet) {
             return (<div>
-                {selectedPallet.bricks && selectedPallet.bricks.map(x => {
-                    return (<BrickItem brick={x} updateBrick={updateBrick} editableFields={editableFields} addEditableField={addEditableField}></BrickItem>)
-                })}
+                <table>
+                    {selectedPallet.bricks && selectedPallet.bricks.map(x => {
+                        return (<BrickItem brick={x} updateBrick={updateBrick} editableFields={editableFields} addEditableField={addEditableField}></BrickItem>)
+                    })}
+                </table>
                 <button onClick={savePallet}>Save pallet</button>
                 <button onClick={addBrick}>Add brick</button>
 
@@ -127,7 +129,7 @@ function BrickList() {
             <Link to="/pallets/new">New Pallet</Link>
             <p></p>
             <div className="parent">
-                <div className='left'>
+                <div className='left'>>
                     <span><b>{params.username}</b> pallets: </span>
                     {renderMenu()}
                 </div>

@@ -53,11 +53,11 @@ function BrickItem(props) {
     const renderReadonly = () => {
         console.log("renderreadonly: ", props.brick.id)
         return (
-            <div >
-                <div className="listLeft"><span className="p_wrap">{props.brick.key}</span></div>
-                <div className="listRight"><span className="p_wrap">{props.brick.value}</span></div>
-                {renderEditButton()}
-            </div>
+            <tr>
+                    <td><span className="p_wrap">{props.brick.key}</span></td>
+                    <td>className="listRight"><span className="p_wrap">{props.brick.value}</span></td>
+                    <td>{renderEditButton()}</td>
+            </tr>
         )
     }
 
