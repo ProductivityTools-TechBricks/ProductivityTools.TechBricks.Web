@@ -55,7 +55,7 @@ function BrickItem(props) {
         return (
             <tr>
                     <td><span className="p_wrap">{props.brick.key}</span></td>
-                    <td>className="listRight"><span className="p_wrap">{props.brick.value}</span></td>
+                    <td><span className="p_wrap">{props.brick.value}</span></td>
                     <td>{renderEditButton()}</td>
             </tr>
         )
