@@ -49,8 +49,21 @@ function BrickItem(props) {
         //if (userName=paramsUserName) {
         if (true) {
             return (
-                <IconButton onClick={() => props.addEditableField(props.brick.id)}>
+                <IconButton onClick={() => props.addEditableField(props.brick.id)} size="small">
                     <EditIcon />
+                </IconButton >)
+        }
+    }
+    
+    const renderDeleteButton = () => {
+        console.log("renderEditbutton", user);
+        let userName = getUserName();
+        let paramsUserName = params.username
+        //if (userName=paramsUserName) {
+        if (true) {
+            return (
+                <IconButton onClick={() => props.addEditableField(props.brick.id)} size="small">
+                    <DeleteIcon />
                 </IconButton >)
         }
     }
@@ -61,11 +74,11 @@ function BrickItem(props) {
         return (
             <>
                 <tr>
-                    <td><p className="key">{props.brick.description}</p></td>
-                    <td>{renderEditButton()}</td>
+                    <td><p className="description">{props.brick.description} {renderEditButton()} {renderDeleteButton()}</p></td>
+                    <td></td>
                 </tr>
                 <tr>
-                    <td><span className="p_wrap">{props.brick.brick}</span></td>
+                    <td><span className="brick">{props.brick.brick}</span></td>
                 </tr>
             </>
         )

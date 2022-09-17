@@ -16,12 +16,13 @@
     flex: 1;
 }
 
-.p_wrap{
+.brick{
     white-space: pre-line;
 }
 
-.key{
-    font-weight: 500;
+.description{
+    font-weight:700;
+    font-size: large;
     margin-top: 20px;
     margin-bottom: 0px;
 }
