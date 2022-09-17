@@ -62,8 +62,9 @@ function BrickList() {
         console.log("update brick")
         let sp = { ...selectedPallet }
         let item = sp.bricks.find(x => x.id == id);
-        // item.key = key;
-        // item.value = value;
+        //removing legacy property
+        delete item.key;
+        delete item.value;
 
         item.description = description;
         item.brick = brick;
