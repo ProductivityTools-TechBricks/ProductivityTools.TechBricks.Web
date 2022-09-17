@@ -67,6 +67,10 @@ function BrickList() {
         let item = sp.bricks.find(x => x.id == id);
         item.key = key;
         item.value = value;
+
+        item.description=value;
+        item.brick=key;
+
         setSelectedPallet(sp);
 
         updateSelectedPalletInPallets();
