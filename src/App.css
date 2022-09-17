@@ -22,6 +22,10 @@
     white-space: pre-line;
 }
 
+.key{
+    font-weight: 500;
+}
+
 .listLeft{
     
     float:left;
