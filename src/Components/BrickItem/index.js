@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth } from '../../Session/AuthContext.js'
 import { getUserName } from '../../Tools/usertools'
-import EditIcon from '@mui/icons-material/Edit';
+//import EditIcon from '@mui/icons-material/Edit';
 
 
 function BrickItem(props) {
@@ -32,11 +32,11 @@ function BrickItem(props) {
     const onChange = (e, k) => {
         console.log("onChange Bricks")
         console.log(e.target.value);
-        if (e.target.name == 'key') {
-            props.updateBrick(props.brick.id, e.target.value, props.brick.value)
+        if (e.target.name == 'description') {
+            props.updateBrick(props.brick.id, e.target.value, props.brick.brick)
         }
-        if (e.target.name == 'value') {
-            props.updateBrick(props.brick.id, props.brick.key, e.target.value)
+        if (e.target.name == 'brick') {
+            props.updateBrick(props.brick.id, props.brick.description, e.target.value)
         }
     }
 
@@ -56,11 +56,11 @@ function BrickItem(props) {
         return (
             <>
                 <tr>
-                    <td><p className="key">{props.brick.key}</p></td>
+                    <td><p className="key">{props.brick.description}</p></td>
                     <td>{renderEditButton()}</td>
                 </tr>
                 <tr>
-                    <td><span className="p_wrap">{props.brick.value}</span></td>
+                    <td><span className="p_wrap">{props.brick.brick}</span></td>
                 </tr>
             </>
         )
@@ -72,8 +72,8 @@ function BrickItem(props) {
         return (
             // <div className="inputDivContainer">
             <div>
-                <input className='keyInput' name="key" cols="100" rows="5" value={props.brick.key} onChange={onChange}></input><br/>
-                <textarea className='valueInput' name="value" cols="100" rows="5" value={props.brick.value} onChange={onChange}></textarea>
+                <input className='keyInput' name="description" cols="100" rows="5" value={props.brick.description} onChange={onChange}></input><br/>
+                <textarea className='valueInput' name="brick" cols="100" rows="5" value={props.brick.brick} onChange={onChange}></textarea>
             </div>
         )
     }

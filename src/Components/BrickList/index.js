@@ -61,15 +61,15 @@ function BrickList() {
         setPallets(p);
     }
 
-    const updateBrick = (id, key, value) => {
+    const updateBrick = (id, description, brick) => {
         console.log("update brick")
         let sp = { ...selectedPallet }
         let item = sp.bricks.find(x => x.id == id);
-        item.key = key;
-        item.value = value;
+        // item.key = key;
+        // item.value = value;
 
-        item.description=value;
-        item.brick=key;
+        item.description=description;
+        item.brick=brick;
 
         setSelectedPallet(sp);
 
@@ -84,7 +84,7 @@ function BrickList() {
         console.log("add brick")
         let sp = { ...selectedPallet }
         let newuuid = uuidv4();
-        sp.bricks.push({ id: newuuid, key: "", value: "" });
+        sp.bricks.push({ id: newuuid, description: "", brick: "" });
 
         setSelectedPallet(sp);
         addEditableField(newuuid);
@@ -133,7 +133,7 @@ function BrickList() {
             <Link to="/pallets/new">New Pallet</Link>
             <p></p>
             <div className="parent">
-                <div className='left'>>
+                <div className='left'>
                     <span><b>{params.username}</b> pallets: </span>
                     {renderMenu()}
                 </div>
