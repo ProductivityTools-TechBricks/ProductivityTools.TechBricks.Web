@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth } from '../../Session/AuthContext.js'
 import { getUserName } from '../../Tools/usertools'
-//import EditIcon from '@mui/icons-material/Edit';
+import IconButton from '@mui/material/IconButton';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 
 function BrickItem(props) {
@@ -46,7 +48,10 @@ function BrickItem(props) {
         let paramsUserName = params.username
         //if (userName=paramsUserName) {
         if (true) {
-            return (<button onClick={() => props.addEditableField(props.brick.id)}>edit</button>)
+            return (
+                <IconButton onClick={() => props.addEditableField(props.brick.id)}>
+                    <EditIcon />
+                </IconButton >)
         }
     }
 
@@ -72,7 +77,7 @@ function BrickItem(props) {
         return (
             // <div className="inputDivContainer">
             <div>
-                <input className='keyInput' name="description" cols="100" rows="5" value={props.brick.description} onChange={onChange}></input><br/>
+                <input className='keyInput' name="description" cols="100" rows="5" value={props.brick.description} onChange={onChange}></input><br />
                 <textarea className='valueInput' name="brick" cols="100" rows="5" value={props.brick.brick} onChange={onChange}></textarea>
             </div>
         )
