@@ -12,10 +12,8 @@
 
 }
 
-
 .right{
     flex: 1;
-
 }
 
 .p_wrap{
@@ -24,10 +22,11 @@
 
 .key{
     font-weight: 500;
+    margin-top: 20px;
+    margin-bottom: 0px;
 }
 
 .listLeft{
-    
     float:left;
     background-color: aqua;
 }
@@ -42,5 +41,9 @@
   align-items: top;
 }
 .keyInput{
+    width: 100%;
+}
 
+.valueInput{
+    width: 100%;
 }
