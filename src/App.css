@@ -9,7 +9,22 @@
 .left{
     flex: 0 0 15%;
     background-color: azure;
+}
 
+.left ul{
+    list-style-type: "» ";
+    margin-left: 10px;
+    padding-left: 10px;
+}
+
+.left ul li a{
+    text-decoration: none;
+}
+
+.left ul li a:hover{
+   color:black;
+   text-decoration: underline;
+    
 }
 
 .right{
