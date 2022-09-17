@@ -8,9 +8,6 @@ import { auth } from '../../Session/firebase.js'
 import { useParams } from "react-router-dom";
 import { getUserName } from '../../Tools/usertools'
 
-
-
-
 function BrickList() {
     const [pallets, setPallets] = useState([])
     const [selectedPallet, setSelectedPallet] = useState(null)
@@ -68,11 +65,27 @@ function BrickList() {
         // item.key = key;
         // item.value = value;
 
-        item.description=description;
-        item.brick=brick;
+        item.description = description;
+        item.brick = brick;
 
         setSelectedPallet(sp);
 
+        updateSelectedPalletInPallets();
+    }
+
+    const removeBrick = (id) => {
+        console.log("remove brick- not working now")
+        
+        let sp = { ...selectedPallet }
+        console.log(sp);
+        for (var i = 0; i < sp.bricks.length; i++) {
+            if (sp.bricks[i].id == id) {
+                sp.bricks.splice(i, 1)
+                i--;
+            }
+        }
+        console.log(sp);
+        setSelectedPallet(sp);
         updateSelectedPalletInPallets();
     }
 
@@ -112,7 +125,7 @@ function BrickList() {
             return (<div>
                 <table>
                     {selectedPallet.bricks && selectedPallet.bricks.map(x => {
-                        return (<BrickItem brick={x} updateBrick={updateBrick} editableFields={editableFields} addEditableField={addEditableField}></BrickItem>)
+                        return (<BrickItem brick={x} updateBrick={updateBrick} removeBrick={removeBrick} editableFields={editableFields} addEditableField={addEditableField}></BrickItem>)
                     })}
                 </table>
                 <button onClick={savePallet}>Save pallet</button>

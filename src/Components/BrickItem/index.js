@@ -62,7 +62,7 @@ function BrickItem(props) {
         //if (userName=paramsUserName) {
         if (true) {
             return (
-                <IconButton onClick={() => props.addEditableField(props.brick.id)} size="small">
+                <IconButton onClick={() => props.removeBrick(props.brick.id)} size="small">
                     <DeleteIcon />
                 </IconButton >)
         }
