@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth } from '../../Session/AuthContext.js'
 import { getUserName } from '../../Tools/usertools'
+import EditIcon from '@mui/icons-material/Edit';
 
 
 function BrickItem(props) {
