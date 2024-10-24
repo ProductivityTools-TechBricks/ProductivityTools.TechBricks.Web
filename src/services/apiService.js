@@ -6,7 +6,7 @@ async function invokeCall(user, call) {
 
     let token = localStorage.getItem('token')
     console.log("token from localstorage", token)
-    const header = { headers: { Authorization: `Bearer ${token}` } }
+    const header = { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', } }
     const response = call(header);
     return response;
 }
@@ -47,7 +47,7 @@ async function removePellet(user, pallet) {
         console.log("removePellet: header", header)
         console.log("removePellet: payload", payload)
 
-        const response = await axios.delete(`${config.PATH_BASE}pallet`, payload, header)
+        const response = await axios.delete(`${config.PATH_BASE}pallet`, { data: payload.data, headers: header.headers })
         return response.data;
     }
     return invokeCall(user, call);
@@ -55,7 +55,10 @@ async function removePellet(user, pallet) {
 
 async function addBrick(user, data) {
     const header = {
-        headers: { Authorization: `Bearer ${user.accessToken}` }
+        headers: {
+            Authorization: `Bearer ${user.accessToken}`,
+
+        }
     }
     const response = await axios.post(`${config.PATH_BASE}brick`, data, header)
 }
