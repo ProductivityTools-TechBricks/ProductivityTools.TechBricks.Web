@@ -1,5 +1,5 @@
 const dev = {
-    PATH_BASE: 'http://localhost:8080/'
+    PATH_BASE: 'http://localhost:5000/'
 }
 
 const prod = {

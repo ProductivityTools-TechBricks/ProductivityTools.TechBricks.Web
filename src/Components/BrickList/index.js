@@ -76,7 +76,7 @@ function BrickList() {
 
     const removeBrick = (id) => {
         console.log("remove brick- not working now")
-        
+
         let sp = { ...selectedPallet }
         console.log(sp);
         for (var i = 0; i < sp.bricks.length; i++) {
@@ -112,10 +112,14 @@ function BrickList() {
         setEditableFields([]);
     }
 
+    const removePellet = () => {
+        
+    }
+
 
 
     const renderMenu = () => {
-        return (<ul>{pallets.map(x => {
+        return (<ul>{pallets.sort((a, b) => (a.name > b.name) ? 1 : -1).map(x => {
             //return (<li><Link to="#" onClick={(e) => categoryClick(e, x.document_id)} >{x.name} - {x.document_id}</Link></li>)
             return (<li><Link to="#" onClick={(e) => categoryClick(e, x.document_id)} >{x.name}</Link></li>)
         })}</ul>)
@@ -131,6 +135,7 @@ function BrickList() {
                 </table>
                 <button onClick={savePallet}>Save pallet</button>
                 <button onClick={addBrick}>Add brick</button>
+                <button onclick={removePellet}>Remove Pellet</button>
 
             </div >)
         }
