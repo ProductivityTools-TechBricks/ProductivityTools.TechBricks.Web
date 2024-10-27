@@ -113,7 +113,8 @@ function BrickList() {
     }
 
     const removePellet = () => {
-        
+        console.log("removePellet", selectedPallet)
+        apiService.removePellet(user, selectedPallet)
     }
 
 
@@ -135,7 +136,7 @@ function BrickList() {
                 </table>
                 <button onClick={savePallet}>Save pallet</button>
                 <button onClick={addBrick}>Add brick</button>
-                <button onclick={removePellet}>Remove Pellet</button>
+                <button onClick={removePellet}>Remove Pellet1</button>
 
             </div >)
         }

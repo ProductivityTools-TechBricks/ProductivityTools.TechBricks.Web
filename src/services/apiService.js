@@ -31,13 +31,23 @@ async function addPallet(user, palletName, palletOwners) {
 
 async function updatePallet(user, pallet) {
     let call = async (header) => {
-        console.log("updatePallet")
-        console.log(header);
-        console.log("pallet");
-        console.log(pallet);
-
+        console.log("updatePallet: header", header)
+        console.log("updatePallet: pallet", pallet);
         //const response = await axios.post(`${config.PATH_BASE}pallet`, pallet, header)
-        const response = await axios.post(`${config.PATH_BASE}pallet`, pallet, header )
+        const response = await axios.post(`${config.PATH_BASE}pallet`, pallet, header)
+        return response.data;
+    }
+    return invokeCall(user, call);
+}
+
+async function removePellet(user, pallet) {
+    let call = async (header) => {
+
+        const payload = { data: pallet }
+        console.log("removePellet: header", header)
+        console.log("removePellet: payload", payload)
+
+        const response = await axios.delete(`${config.PATH_BASE}pallet`, payload, header)
         return response.data;
     }
     return invokeCall(user, call);
@@ -95,6 +105,7 @@ export {
     addPallet,
     updatePallet,
     getPallets,
+    removePellet,
     //   getShortcuts,
     //addShortuct,
     //  addBrick
