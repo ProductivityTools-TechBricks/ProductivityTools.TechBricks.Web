@@ -10,6 +10,7 @@ import { getUserName } from '../../Tools/usertools'
 
 function BrickList() {
     const [pallets, setPallets] = useState([])
+    const [palletsRefresher, setPalletsRefresher] = useState(1);
     const [selectedPallet, setSelectedPallet] = useState(null)
     const [editableFields, setEditableFields] = useState([]);
 
@@ -38,7 +39,7 @@ function BrickList() {
             }
         }
         fetchData();
-    }, []);
+    }, [palletsRefresher]);
 
 
     const categoryClick = (e, documentId) => {
@@ -115,6 +116,7 @@ function BrickList() {
     const removePellet = () => {
         console.log("removePellet", selectedPallet)
         apiService.removePellet(user, selectedPallet)
+        setPalletsRefresher(palletsRefresher + 1)
     }
 
 

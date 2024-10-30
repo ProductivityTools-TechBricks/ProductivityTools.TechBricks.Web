@@ -2,11 +2,13 @@ import { createContext, useEffect, useContext, useState } from 'react';
 import { auth } from './firebase.js'
 
 const AuthContext = createContext({
-    user: null
+    user: null,
+    userName: null
 })
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
+    const [userName, setUserName] = useState(null)
 
     useEffect(() => {
         return auth.onIdTokenChanged(async (user) => {
@@ -17,6 +19,7 @@ export function AuthProvider({ children }) {
             else {
                 const token = await user.getIdToken();
                 setUser(user);
+                setUserName(user.email.replace("@gmail.com", ""))
                 localStorage.setItem("token", token);
                 console.log("AuthProvider\Token")
                 console.log(token);
@@ -32,13 +35,13 @@ export function AuthProvider({ children }) {
                 await user.getIdToken(true);
                 console.log(user);
             }
-            
+
         }, 10 * 60 * 1000);
         return () => clearInterval(handle);
     }, []);
 
     return (
-        <AuthContext.Provider value={{ user }}>{children}</AuthContext.Provider>
+        <AuthContext.Provider value={{ user, userName }}>{children}</AuthContext.Provider>
     )
 }
 export const useAuth = () => {

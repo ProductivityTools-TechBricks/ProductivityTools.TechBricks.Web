@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import { getUserName } from '../../Tools/usertools'
 
@@ -8,18 +8,29 @@ import { useAuth } from '../../Session/AuthContext'
 
 function PalletItemNew() {
 
+    const navigate = useNavigate();
     const { user } = useAuth();
     const [pallet, setPallet] = useState(null);
     const [owners, setOwners] = useState([]);
+    const auth = useAuth();
 
 
     useEffect(() => {
         setOwners([getUserName()])
     }, [])
 
-    const addPallet = () => {
+
+
+
+    const addPallet = async () => {
         console.log("addPellet")
-        apiService.addPallet(user, pallet, owners);
+        debugger;
+        await apiService.addPallet(user, pallet, owners);
+        console.log("authuser", auth.userName);
+        var link="/"+auth.userName;
+        navigate(link);
+
+
     }
 
     const pelletNameChange = (e) => {
