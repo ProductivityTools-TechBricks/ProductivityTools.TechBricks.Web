@@ -24,7 +24,6 @@ function PalletItemNew() {
 
     const addPallet = async () => {
         console.log("addPellet")
-        debugger;
         await apiService.addPallet(user, pallet, owners);
         console.log("authuser", auth.userName);
         var link="/"+auth.userName;

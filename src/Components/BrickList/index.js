@@ -31,7 +31,7 @@ function BrickList() {
             //         }
             //     }
             //   });
-            console.log(params);
+            console.log("params", params);
             const r = await apiService.getPallets(user, params.username);
             if (r != null) {
                 setPallets(r);
@@ -113,9 +113,9 @@ function BrickList() {
         setEditableFields([]);
     }
 
-    const removePellet = () => {
+    const removePellet = async () => {
         console.log("removePellet", selectedPallet)
-        apiService.removePellet(user, selectedPallet)
+        await apiService.removePellet(user, selectedPallet)
         setPalletsRefresher(palletsRefresher + 1)
     }
 
@@ -153,11 +153,15 @@ function BrickList() {
             <p>Logged user: {getUserName()}</p>
             <Link to="/">Home</Link>
             <Link to="/pallets/new">New Pallet</Link>
-            <p></p>
+            <p>{palletsRefresher}</p>
             <div className="parent">
                 <div className='left'>
                     <span><b>{params.username}</b> pallets: </span>
-                    {renderMenu()}
+                    {/* {renderMenu()} */}
+                    <ul>{pallets.sort((a, b) => (a.name > b.name) ? 1 : -1).map(x => {
+                        //return (<li><Link to="#" onClick={(e) => categoryClick(e, x.document_id)} >{x.name} - {x.document_id}</Link></li>)
+                        return (<li><Link to="#" onClick={(e) => categoryClick(e, x.document_id)} >{x.name}</Link></li>)
+                    })}</ul>
                 </div>
                 <div className='right'>
                     {renderBrickItems()}
