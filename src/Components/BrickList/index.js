@@ -16,6 +16,9 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+import InputLabel from '@mui/material/InputLabel';
 
 function BrickList() {
     const [pallets, setPallets] = useState([])
@@ -33,6 +36,12 @@ function BrickList() {
     // Delete Dialog State
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [palletToDelete, setPalletToDelete] = useState(null);
+
+    // Move Brick State
+    const [moveBrickDialogOpen, setMoveBrickDialogOpen] = useState(false);
+    const [brickToMove, setBrickToMove] = useState(null);
+    const [targetPalletIdMove, setTargetPalletIdMove] = useState("");
+    const [dragHoveredPalletId, setDragHoveredPalletId] = useState(null);
 
     const { user } = useAuth();
 
@@ -213,6 +222,53 @@ function BrickList() {
     };
 
 
+    const handleDragOver = (e, targetPalletId) => {
+        e.preventDefault();
+        if (dragHoveredPalletId !== targetPalletId) {
+            setDragHoveredPalletId(targetPalletId);
+        }
+    };
+
+    const handleDragLeave = () => {
+        setDragHoveredPalletId(null);
+    };
+
+    const handleDrop = async (e, targetPalletId) => {
+        e.preventDefault();
+        setDragHoveredPalletId(null);
+        const brickId = e.dataTransfer.getData("brickId");
+        if (brickId && selectedPallet && targetPalletId && selectedPallet.document_id !== targetPalletId) {
+            await apiService.moveBrick(user, selectedPallet.document_id, targetPalletId, brickId);
+            setPalletsRefresher(palletsRefresher + 1);
+            let sp = { ...selectedPallet };
+            sp.bricks = sp.bricks.filter(b => b.id !== brickId);
+            setSelectedPallet(sp);
+        }
+    };
+
+    const initMoveBrick = (brick) => {
+        setBrickToMove(brick);
+        setTargetPalletIdMove("");
+        setMoveBrickDialogOpen(true);
+    };
+
+    const handleMoveBrickDialogClose = () => {
+        setMoveBrickDialogOpen(false);
+        setBrickToMove(null);
+        setTargetPalletIdMove("");
+    };
+
+    const handleMoveBrickSubmit = async () => {
+        if (brickToMove && selectedPallet && targetPalletIdMove) {
+            await apiService.moveBrick(user, selectedPallet.document_id, targetPalletIdMove, brickToMove.id);
+            setPalletsRefresher(palletsRefresher + 1);
+            let sp = { ...selectedPallet };
+            sp.bricks = sp.bricks.filter(b => b.id !== brickToMove.id);
+            setSelectedPallet(sp);
+        }
+        handleMoveBrickDialogClose();
+    };
+
     const renderMenu = () => {
         return (<ul>{pallets.sort((a, b) => (a.name > b.name) ? 1 : -1).map(x => {
             //return (<li><Link to="#" onClick={(e) => categoryClick(e, x.document_id)} >{x.name} - {x.document_id}</Link></li>)
@@ -224,11 +280,9 @@ function BrickList() {
         if (selectedPallet) {
             return (<div>
                 <table>
-                    <tbody>
-                        {selectedPallet.bricks && selectedPallet.bricks.map(x => {
-                            return (<BrickItem key={x.id} brick={x} updateBrick={updateBrick} removeBrick={removeBrick} editableFields={editableFields} addEditableField={addEditableField}></BrickItem>)
-                        })}
-                    </tbody>
+                    {selectedPallet.bricks && selectedPallet.bricks.map(x => {
+                        return (<BrickItem key={x.id} brick={x} updateBrick={updateBrick} removeBrick={removeBrick} initMoveBrick={initMoveBrick} editableFields={editableFields} addEditableField={addEditableField}></BrickItem>)
+                    })}
                 </table>
                 <button onClick={savePallet}>Save pallet</button>
                 <button onClick={addBrick}>Add brick</button>
@@ -254,7 +308,14 @@ function BrickList() {
                     {/* {renderMenu()} */}
                     <ul>{pallets.sort((a, b) => (a.name > b.name) ? 1 : -1).map(x => {
                         return (
-                            <li key={x.document_id} onContextMenu={(e) => handleContextMenu(e, x)}>
+                            <li 
+                                key={x.document_id} 
+                                onContextMenu={(e) => handleContextMenu(e, x)}
+                                onDragOver={(e) => handleDragOver(e, x.document_id)}
+                                onDragLeave={handleDragLeave}
+                                onDrop={(e) => handleDrop(e, x.document_id)}
+                                style={{ fontWeight: dragHoveredPalletId === x.document_id ? 'bold' : 'normal' }}
+                            >
                                 <Link to="#" onClick={(e) => categoryClick(e, x.document_id)}>
                                     {x.name}
                                 </Link>
@@ -307,6 +368,32 @@ function BrickList() {
                         <DialogActions>
                             <Button onClick={handleCancelDelete}>Cancel</Button>
                             <Button onClick={handleConfirmDelete} color="error" variant="contained">Delete</Button>
+                        </DialogActions>
+                    </Dialog>
+                    <Dialog open={moveBrickDialogOpen} onClose={handleMoveBrickDialogClose}>
+                        <DialogTitle>Move Brick</DialogTitle>
+                        <DialogContent>
+                            <DialogContentText sx={{ mb: 2 }}>
+                                Select the destination pallet to move this brick:
+                            </DialogContentText>
+                            <FormControl fullWidth>
+                                <InputLabel>Target Pallet</InputLabel>
+                                <Select
+                                    value={targetPalletIdMove}
+                                    label="Target Pallet"
+                                    onChange={(e) => setTargetPalletIdMove(e.target.value)}
+                                >
+                                    {pallets.filter(p => selectedPallet && p.document_id !== selectedPallet.document_id).map((p) => (
+                                        <MenuItem key={p.document_id} value={p.document_id}>
+                                            {p.name}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={handleMoveBrickDialogClose}>Cancel</Button>
+                            <Button onClick={handleMoveBrickSubmit} disabled={!targetPalletIdMove}>Move</Button>
                         </DialogActions>
                     </Dialog>
                 </div>

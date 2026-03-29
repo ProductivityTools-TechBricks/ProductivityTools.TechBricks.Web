@@ -112,6 +112,19 @@ async function renamePallet(user, palletId, newName) {
     return invokeCall(user, call);
 }
 
+async function moveBrick(user, sourcePalletId, targetPalletId, brickId) {
+    let call = async (header) => {
+        const payload = {
+            source_pallet_id: sourcePalletId,
+            target_pallet_id: targetPalletId,
+            brick_id: brickId
+        };
+        const response = await axios.patch(`${config.PATH_BASE}Brick`, payload, header);
+        return response.data;
+    }
+    return invokeCall(user, call);
+}
+
 
 export {
     addPallet,
@@ -119,6 +132,7 @@ export {
     getPallets,
     removePellet,
     renamePallet,
+    moveBrick,
     //   getShortcuts,
     //addShortuct,
     //  addBrick
