@@ -7,12 +7,32 @@ import { v4 as uuidv4 } from 'uuid'
 import { auth } from '../../Session/firebase.js'
 import { useParams } from "react-router-dom";
 import { getUserName } from '../../Tools/usertools'
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
 
 function BrickList() {
     const [pallets, setPallets] = useState([])
     const [palletsRefresher, setPalletsRefresher] = useState(1);
     const [selectedPallet, setSelectedPallet] = useState(null)
     const [editableFields, setEditableFields] = useState([]);
+    
+    // Context Menu State
+    const [contextMenu, setContextMenu] = useState(null);
+    const [contextMenuPallet, setContextMenuPallet] = useState(null);
+    const [renamingPalletId, setRenamingPalletId] = useState(null);
+    const [renamingPalletName, setRenamingPalletName] = useState("");
+    const [renameDialogOpen, setRenameDialogOpen] = useState(false);
+    
+    // Delete Dialog State
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [palletToDelete, setPalletToDelete] = useState(null);
 
     const { user } = useAuth();
 
@@ -113,12 +133,84 @@ function BrickList() {
         setEditableFields([]);
     }
 
-    const removePellet = async () => {
-        console.log("removePellet", selectedPallet)
-        await apiService.removePellet(user, selectedPallet)
-        setPalletsRefresher(palletsRefresher + 1)
+    const removePellet = () => {
+        if (selectedPallet) {
+            setPalletToDelete(selectedPallet);
+            setDeleteDialogOpen(true);
+        }
     }
 
+    // Context Menu Handlers
+    const handleContextMenu = (event, pallet) => {
+        event.preventDefault();
+        setContextMenu(
+            contextMenu === null
+                ? {
+                      mouseX: event.clientX + 2,
+                      mouseY: event.clientY - 6,
+                  }
+                : null
+        );
+        setContextMenuPallet(pallet);
+    };
+
+    const handleCloseMenu = () => {
+        setContextMenu(null);
+        setContextMenuPallet(null);
+    };
+
+    const handleMenuDelete = () => {
+        if (contextMenuPallet) {
+            setPalletToDelete(contextMenuPallet);
+            setDeleteDialogOpen(true);
+        }
+        handleCloseMenu();
+    };
+
+    const handleConfirmDelete = async () => {
+        if (palletToDelete) {
+            await apiService.removePellet(user, palletToDelete);
+            setPalletsRefresher(palletsRefresher + 1);
+            if (selectedPallet && selectedPallet.document_id === palletToDelete.document_id) {
+                setSelectedPallet(null);
+            }
+        }
+        setDeleteDialogOpen(false);
+        setPalletToDelete(null);
+    };
+
+    const handleCancelDelete = () => {
+        setDeleteDialogOpen(false);
+        setPalletToDelete(null);
+    };
+
+    const handleMenuRename = () => {
+        if (contextMenuPallet) {
+            setRenamingPalletId(contextMenuPallet.document_id);
+            setRenamingPalletName(contextMenuPallet.name);
+            setRenameDialogOpen(true);
+        }
+        handleCloseMenu();
+    };
+
+    const handleRenameDialogClose = () => {
+        setRenameDialogOpen(false);
+        setRenamingPalletId(null);
+    };
+
+    const handleRenameDialogSubmit = async () => {
+        let pallet = pallets.find(p => p.document_id === renamingPalletId);
+        if (pallet && renamingPalletName.trim() !== "" && renamingPalletName !== pallet.name) {
+            let updatedPallet = { ...pallet, name: renamingPalletName };
+            // Handled efficiently with dedicated rename/PATCH method
+            await apiService.renamePallet(user, pallet.document_id, renamingPalletName);
+            setPalletsRefresher(palletsRefresher + 1);
+            if (selectedPallet && selectedPallet.document_id === pallet.document_id) {
+                setSelectedPallet(updatedPallet);
+            }
+        }
+        handleRenameDialogClose();
+    };
 
 
     const renderMenu = () => {
@@ -132,13 +224,15 @@ function BrickList() {
         if (selectedPallet) {
             return (<div>
                 <table>
-                    {selectedPallet.bricks && selectedPallet.bricks.map(x => {
-                        return (<BrickItem brick={x} updateBrick={updateBrick} removeBrick={removeBrick} editableFields={editableFields} addEditableField={addEditableField}></BrickItem>)
-                    })}
+                    <tbody>
+                        {selectedPallet.bricks && selectedPallet.bricks.map(x => {
+                            return (<BrickItem key={x.id} brick={x} updateBrick={updateBrick} removeBrick={removeBrick} editableFields={editableFields} addEditableField={addEditableField}></BrickItem>)
+                        })}
+                    </tbody>
                 </table>
                 <button onClick={savePallet}>Save pallet</button>
                 <button onClick={addBrick}>Add brick</button>
-                <button onClick={removePellet}>Remove Pellet1</button>
+                <button onClick={removePellet}>Remove Pellet</button>
 
             </div >)
         }
@@ -159,9 +253,62 @@ function BrickList() {
                     <span><b>{params.username}</b> pallets: </span>
                     {/* {renderMenu()} */}
                     <ul>{pallets.sort((a, b) => (a.name > b.name) ? 1 : -1).map(x => {
-                        //return (<li><Link to="#" onClick={(e) => categoryClick(e, x.document_id)} >{x.name} - {x.document_id}</Link></li>)
-                        return (<li><Link to="#" onClick={(e) => categoryClick(e, x.document_id)} >{x.name}</Link></li>)
+                        return (
+                            <li key={x.document_id} onContextMenu={(e) => handleContextMenu(e, x)}>
+                                <Link to="#" onClick={(e) => categoryClick(e, x.document_id)}>
+                                    {x.name}
+                                </Link>
+                            </li>
+                        )
                     })}</ul>
+                    <Menu
+                        open={contextMenu !== null}
+                        onClose={handleCloseMenu}
+                        anchorReference="anchorPosition"
+                        anchorPosition={
+                            contextMenu !== null
+                                ? { top: contextMenu.mouseY, left: contextMenu.mouseX }
+                                : undefined
+                        }
+                    >
+                        <MenuItem disabled style={{ opacity: 1, fontWeight: 'bold', borderBottom: '1px solid #e0e0e0', marginBottom: '8px', color: 'black' }}>
+                            {contextMenuPallet ? contextMenuPallet.name : ''}
+                        </MenuItem>
+                        <MenuItem onClick={handleMenuRename}>Rename</MenuItem>
+                        <MenuItem onClick={handleMenuDelete}>Delete</MenuItem>
+                    </Menu>
+                    <Dialog open={renameDialogOpen} onClose={handleRenameDialogClose}>
+                        <DialogTitle>Rename Pallet</DialogTitle>
+                        <DialogContent>
+                            <TextField
+                                autoFocus
+                                margin="dense"
+                                label="Pallet Name"
+                                type="text"
+                                fullWidth
+                                variant="standard"
+                                value={renamingPalletName}
+                                onChange={(e) => setRenamingPalletName(e.target.value)}
+                                onKeyDown={(e) => { if(e.key === 'Enter') handleRenameDialogSubmit(); }}
+                            />
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={handleRenameDialogClose}>Cancel</Button>
+                            <Button onClick={handleRenameDialogSubmit}>Save</Button>
+                        </DialogActions>
+                    </Dialog>
+                    <Dialog open={deleteDialogOpen} onClose={handleCancelDelete}>
+                        <DialogTitle>Confirm Deletion</DialogTitle>
+                        <DialogContent>
+                            <DialogContentText>
+                                Are you sure you want to delete the pallet "{palletToDelete?.name}"?
+                            </DialogContentText>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={handleCancelDelete}>Cancel</Button>
+                            <Button onClick={handleConfirmDelete} color="error" variant="contained">Delete</Button>
+                        </DialogActions>
+                    </Dialog>
                 </div>
                 <div className='right'>
                     {renderBrickItems()}

@@ -101,7 +101,16 @@ async function addShortuct(user, shortuct) {
     const response = await axios.post(`${config.PATH_BASE}card`, shortuct, header)
     return response.data;
 }
-
+async function renamePallet(user, palletId, newName) {
+    let call = async (header) => {
+        const payload = { document_id: palletId, name: newName }
+        console.log("renamePallet: header", header)
+        console.log("renamePallet: payload", payload)
+        const response = await axios.patch(`${config.PATH_BASE}pallet`, payload, header)
+        return response.data;
+    }
+    return invokeCall(user, call);
+}
 
 
 export {
@@ -109,6 +118,7 @@ export {
     updatePallet,
     getPallets,
     removePellet,
+    renamePallet,
     //   getShortcuts,
     //addShortuct,
     //  addBrick
