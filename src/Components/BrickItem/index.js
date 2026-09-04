@@ -6,6 +6,7 @@ import IconButton from '@mui/material/IconButton';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DriveFileMoveIcon from '@mui/icons-material/DriveFileMove';
+import AnchorIcon from '@mui/icons-material/Anchor';
 
 
 function BrickItem(props) {
@@ -80,16 +81,33 @@ function BrickItem(props) {
         }
     }
 
+    const renderAnchorButton = () => {
+        return (
+            <IconButton
+                component="span"
+                size="small"
+                title="Drag to another Pallet"
+                draggable
+                onDragStart={handleDragStart}
+                style={{ cursor: 'grab' }}
+            >
+                <AnchorIcon style={{ pointerEvents: 'none' }} />
+            </IconButton>
+        )
+    }
+
     const handleDragStart = (e) => {
         e.dataTransfer.setData("brickId", props.brick.id);
+        e.dataTransfer.setData("text/plain", props.brick.id);
+        e.dataTransfer.effectAllowed = "move";
     };
 
     const renderReadonly = () => {
         console.log("renderreadonly: ", props.brick.id)
         return (
-            <tbody draggable onDragStart={handleDragStart} style={{ cursor: 'grab' }}>
+            <tbody>
                 <tr>
-                    <td><p className="description">{props.brick.description} {renderEditButton()} {renderDeleteButton()} {renderMoveButton()}</p></td>
+                    <td><p className="description">{props.brick.description} {renderEditButton()} {renderDeleteButton()} {renderMoveButton()} {renderAnchorButton()}</p></td>
                     <td></td>
                 </tr>
                 <tr>
