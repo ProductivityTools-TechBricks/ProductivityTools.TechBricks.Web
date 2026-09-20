@@ -7,6 +7,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DriveFileMoveIcon from '@mui/icons-material/DriveFileMove';
 import AnchorIcon from '@mui/icons-material/Anchor';
+import CloseIcon from '@mui/icons-material/Close';
 
 
 function BrickItem(props) {
@@ -23,7 +24,7 @@ function BrickItem(props) {
         console.log("useEffect BrickItem")
         console.log(props.editableFields);
         console.log(props.brick.id);
-        if (props.editableFields.includes(props.brick.id)) {
+        if (props.editableFields && props.editableFields.includes(props.brick.id)) {
             setMode('editable')
             console.log("seteditable")
         }
@@ -31,7 +32,7 @@ function BrickItem(props) {
             setMode('readonly')
             console.log("setreadonly")
         }
-    }, [props.editableFields])
+    }, [props.editableFields, props.brick.id])
 
     const onChange = (e, k) => {
         console.log("onChange Bricks")
@@ -118,14 +119,32 @@ function BrickItem(props) {
     }
 
 
+    const handleClose = () => {
+        if (props.removeEditableField) {
+            props.removeEditableField(props.brick.id);
+        }
+        setMode('readonly');
+    };
+
+    const renderCloseButton = () => {
+        return (
+            <IconButton onClick={handleClose} size="small" title="Close">
+                <CloseIcon />
+            </IconButton>
+        )
+    }
+
     const renderEditable = () => {
-        console.log("redner editable: ", props.brick.id)
+        console.log("render editable: ", props.brick.id)
         return (
             <tbody>
                 <tr>
                     <td colSpan="2">
-                        <input className='keyInput' name="description" size="100" value={props.brick.description} onChange={onChange}></input><br />
-                        <textarea className='valueInput' name="brick" cols="100" rows="5" value={props.brick.brick} onChange={onChange}></textarea>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                            <input className='keyInput' style={{ flex: 1 }} name="description" size="100" value={props.brick.description} onChange={onChange} onKeyDown={(e) => { if (e.key === 'Escape') handleClose(); }}></input>
+                            {renderCloseButton()}
+                        </div>
+                        <textarea className='valueInput' name="brick" cols="100" rows="5" value={props.brick.brick} onChange={onChange} onKeyDown={(e) => { if (e.key === 'Escape') handleClose(); }}></textarea>
                     </td>
                 </tr>
             </tbody>

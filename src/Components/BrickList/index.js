@@ -124,6 +124,10 @@ function BrickList() {
         setEditableFields(editableFields => [...editableFields, newuuid])
     }
 
+    const removeEditableField = (id) => {
+        setEditableFields(editableFields => editableFields.filter(x => x !== id));
+    }
+
     const addBrick = () => {
         console.log("add brick")
         let sp = { ...selectedPallet }
@@ -281,7 +285,7 @@ function BrickList() {
             return (<div>
                 <table>
                     {selectedPallet.bricks && selectedPallet.bricks.map(x => {
-                        return (<BrickItem key={x.id} brick={x} updateBrick={updateBrick} removeBrick={removeBrick} initMoveBrick={initMoveBrick} editableFields={editableFields} addEditableField={addEditableField}></BrickItem>)
+                        return (<BrickItem key={x.id} brick={x} updateBrick={updateBrick} removeBrick={removeBrick} initMoveBrick={initMoveBrick} editableFields={editableFields} addEditableField={addEditableField} removeEditableField={removeEditableField}></BrickItem>)
                     })}
                 </table>
                 <button onClick={savePallet}>Save pallet</button>
