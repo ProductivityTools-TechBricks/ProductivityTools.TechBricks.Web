@@ -58,8 +58,8 @@ jobs:
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_PTTECHBRICKSAPI_347809 }}'
-          projectId: pttechbricksapi-347809
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_PTPROJECTSWEB }}'
+          projectId: ptprojectsweb
 ```
 
 ![](Images/2022-06-07-07-26-47.png)

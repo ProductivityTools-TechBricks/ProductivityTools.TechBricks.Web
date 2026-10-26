@@ -10,16 +10,7 @@ import {
     signOut,
 } from "firebase/auth";
 
-const devfirebaseConfig = {
-    apiKey: "AIzaSyAr0HCAH_e80NeivpRm7PJls50O0sX2Y18",
-    authDomain: "pttechbricksapi-347809.firebaseapp.com",
-    projectId: "pttechbricksapi-347809",
-    storageBucket: "pttechbricksapi-347809.appspot.com",
-    messagingSenderId: "209178581855",
-    appId: "1:209178581855:web:3b4141de71f0f6634a74ea"
-};
-
-const prodfirebaseConfig = {
+const firebaseConfig = {
   apiKey: "AIzaSyAxmnZm4597RcMVQeJrby3HpuDfzYyTJoU",
   authDomain: "ptprojectsweb.firebaseapp.com",
   projectId: "ptprojectsweb",
@@ -30,8 +21,7 @@ const prodfirebaseConfig = {
 
 
 // Initialize Firebase
-const configName=process.env.NODE_ENV === 'development' ? devfirebaseConfig : prodfirebaseConfig;
-const app = initializeApp(configName);
+const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 // Long-living session: Firebase keeps a long-lived refresh token in the
