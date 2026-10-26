@@ -1,5 +1,14 @@
 {
   "projects": {
-    "default": "pttechbricksprod"
+    "default": "ptprojectsweb"
+  },
+  "targets": {
+    "ptprojectsweb": {
+      "hosting": {
+        "pt-spendings": [
+          "pt-techbricks"
+        ]
+      }
+    }
   }
 }
