@@ -1,14 +1,26 @@
 import axios from 'axios'
 import { config } from '../Consts'
-import { auth } from "../Session/firebase"
+import { getIdToken } from "../Session/firebase"
+
+async function buildHeader(forceRefresh) {
+    const token = await getIdToken(forceRefresh);
+    return { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', } }
+}
 
 async function invokeCall(user, call) {
-
-    let token = localStorage.getItem('token')
-    console.log("token from localstorage", token)
-    const header = { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', } }
-    const response = call(header);
-    return response;
+    // Always ask Firebase for the current ID token - it is refreshed
+    // automatically from the long-lived refresh token when it has expired.
+    try {
+        return await call(await buildHeader(false));
+    } catch (err) {
+        // The token may have been revoked or expired in between (e.g. clock
+        // skew, laptop sleep). Force a refresh and retry exactly once.
+        if (err?.response?.status === 401) {
+            console.log("401 from API - forcing token refresh and retrying");
+            return await call(await buildHeader(true));
+        }
+        throw err;
+    }
 }
 
 async function addPallet(user, palletName, palletOwners) {
@@ -74,7 +86,7 @@ async function getPallets(user, queryowner) {
 
         //const response = await axios.get(`${config.PATH_BASE}pallet`, { params: data  }, header);
         // debugger;
-        const response = await axios.get(`${config.PATH_BASE}pallet`, { params: data, headers: header });
+        const response = await axios.get(`${config.PATH_BASE}pallet`, { params: data, headers: header.headers });
         return response.data;
     }
     return invokeCall(user, call)
