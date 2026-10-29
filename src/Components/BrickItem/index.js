@@ -1,163 +1,102 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { useAuth } from '../../Session/AuthContext.js'
-import { getUserName } from '../../Tools/usertools'
-import IconButton from '@mui/material/IconButton';
+import { useEffect, useRef } from "react";
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DriveFileMoveIcon from '@mui/icons-material/DriveFileMove';
-import AnchorIcon from '@mui/icons-material/Anchor';
-import CloseIcon from '@mui/icons-material/Close';
+import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 
+// Bricks are stored as {id, description, brick}; very old ones may still use {key, value}.
+export const brickTitle = (b) => b.description ?? b.key ?? '';
+export const brickValue = (b) => b.brick ?? b.value ?? '';
 
-function BrickItem(props) {
-    console.log("BrickItem");
-    console.log(props)
+function Highlight({ text, query }) {
+    if (!query || !text) return text;
+    const parts = [];
+    const lower = text.toLowerCase();
+    const needle = query.toLowerCase();
+    let start = 0;
+    let i = lower.indexOf(needle);
+    while (i !== -1) {
+        parts.push(text.slice(start, i));
+        parts.push(<mark key={i}>{text.slice(i, i + needle.length)}</mark>);
+        start = i + needle.length;
+        i = lower.indexOf(needle, start);
+    }
+    parts.push(text.slice(start));
+    return parts;
+}
 
-    const [mode, setMode] = useState('readonly')
-    const { user } = useAuth();
-    let params = useParams();
-
-
+function BrickItem({ brick, query, editing, onEdit, onDone, updateBrick, removeBrick, initMoveBrick, onCopy }) {
+    const titleRef = useRef(null);
+    const title = brickTitle(brick);
+    const value = brickValue(brick);
 
     useEffect(() => {
-        console.log("useEffect BrickItem")
-        console.log(props.editableFields);
-        console.log(props.brick.id);
-        if (props.editableFields && props.editableFields.includes(props.brick.id)) {
-            setMode('editable')
-            console.log("seteditable")
+        if (editing && titleRef.current) {
+            titleRef.current.focus();
         }
-        else {
-            setMode('readonly')
-            console.log("setreadonly")
-        }
-    }, [props.editableFields, props.brick.id])
-
-    const onChange = (e, k) => {
-        console.log("onChange Bricks")
-        console.log(e.target.value);
-        if (e.target.name == 'description') {
-            props.updateBrick(props.brick.id, e.target.value, props.brick.brick)
-        }
-        if (e.target.name == 'brick') {
-            props.updateBrick(props.brick.id, props.brick.description, e.target.value)
-        }
-    }
-
-    const renderEditButton = () => {
-        console.log("renderEditbutton", user);
-        let userName = getUserName();
-        let paramsUserName = params.username
-        //if (userName=paramsUserName) {
-        if (true) {
-            return (
-                <IconButton onClick={() => props.addEditableField(props.brick.id)} size="small">
-                    <EditIcon />
-                </IconButton >)
-        }
-    }
-    
-    const renderDeleteButton = () => {
-        console.log("renderEditbutton", user);
-        let userName = getUserName();
-        let paramsUserName = params.username
-        //if (userName=paramsUserName) {
-        if (true) {
-            return (
-                <IconButton onClick={() => props.removeBrick(props.brick.id)} size="small">
-                    <DeleteIcon />
-                </IconButton >)
-        }
-    }
-
-
-    const renderMoveButton = () => {
-        if (true) {
-            return (
-                <IconButton onClick={() => props.initMoveBrick(props.brick)} size="small" title="Move to another Pallet">
-                    <DriveFileMoveIcon />
-                </IconButton>
-            )
-        }
-    }
-
-    const renderAnchorButton = () => {
-        return (
-            <IconButton
-                component="span"
-                size="small"
-                title="Drag to another Pallet"
-                draggable
-                onDragStart={handleDragStart}
-                style={{ cursor: 'grab' }}
-            >
-                <AnchorIcon style={{ pointerEvents: 'none' }} />
-            </IconButton>
-        )
-    }
+    }, [editing]);
 
     const handleDragStart = (e) => {
-        e.dataTransfer.setData("brickId", props.brick.id);
-        e.dataTransfer.setData("text/plain", props.brick.id);
+        e.dataTransfer.setData("brickId", brick.id);
+        e.dataTransfer.setData("text/plain", brick.id);
         e.dataTransfer.effectAllowed = "move";
     };
 
-    const renderReadonly = () => {
-        console.log("renderreadonly: ", props.brick.id)
-        return (
-            <tbody>
-                <tr>
-                    <td><p className="description">{props.brick.description} {renderEditButton()} {renderDeleteButton()} {renderMoveButton()} {renderAnchorButton()}</p></td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td><span className="brick">{props.brick.brick}</span></td>
-                </tr>
-            </tbody>
-        )
-    }
-
-
-    const handleClose = () => {
-        if (props.removeEditableField) {
-            props.removeEditableField(props.brick.id);
-        }
-        setMode('readonly');
+    const onKeyDown = (e) => {
+        if (e.key === 'Escape') onDone();
     };
 
-    const renderCloseButton = () => {
+    if (editing) {
         return (
-            <IconButton onClick={handleClose} size="small" title="Close">
-                <CloseIcon />
-            </IconButton>
-        )
+            <div className="brick brick--editing" id={`brick-${brick.id}`}>
+                <input
+                    ref={titleRef}
+                    className="brick__titleInput"
+                    name="description"
+                    placeholder="Title"
+                    value={title}
+                    onChange={(e) => updateBrick(brick.id, e.target.value, value)}
+                    onKeyDown={onKeyDown}
+                />
+                <textarea
+                    className="brick__valueInput"
+                    name="brick"
+                    placeholder="Value"
+                    rows={Math.max(3, value.split('\n').length + 1)}
+                    value={value}
+                    onChange={(e) => updateBrick(brick.id, title, e.target.value)}
+                    onKeyDown={onKeyDown}
+                />
+                <div className="brick__editHint">
+                    Esc to finish · saved automatically
+                    <button className="tb-button" onClick={onDone}>Done</button>
+                </div>
+            </div>
+        );
     }
 
-    const renderEditable = () => {
-        console.log("render editable: ", props.brick.id)
-        return (
-            <tbody>
-                <tr>
-                    <td colSpan="2">
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                            <input className='keyInput' style={{ flex: 1 }} name="description" size="100" value={props.brick.description} onChange={onChange} onKeyDown={(e) => { if (e.key === 'Escape') handleClose(); }}></input>
-                            {renderCloseButton()}
-                        </div>
-                        <textarea className='valueInput' name="brick" cols="100" rows="5" value={props.brick.brick} onChange={onChange} onKeyDown={(e) => { if (e.key === 'Escape') handleClose(); }}></textarea>
-                    </td>
-                </tr>
-            </tbody>
-        )
-    }
-
-
-    if (mode == 'readonly') {
-        return renderReadonly();
-    }
-    else {
-        return renderEditable();
-    }
-
+    return (
+        <div className="brick" id={`brick-${brick.id}`}>
+            <div className="brick__header">
+                <span className="brick__title" draggable onDragStart={handleDragStart} title="Drag to another pallet">
+                    {title ? <Highlight text={title} query={query} /> : <i className="brick__untitled">Untitled</i>}
+                </span>
+                <span className="brick__actions">
+                    <button title="Copy value" onClick={() => onCopy(value)}><ContentCopyIcon /></button>
+                    <button title="Edit" onClick={onEdit}><EditIcon /></button>
+                    <button title="Move to another pallet" onClick={() => initMoveBrick(brick)}><DriveFileMoveIcon /></button>
+                    <span className="brick__drag" draggable onDragStart={handleDragStart} title="Drag to another pallet"><DragIndicatorIcon /></span>
+                    <button title="Delete" className="brick__delete" onClick={() => removeBrick(brick.id)}><DeleteIcon /></button>
+                </span>
+            </div>
+            {value && (
+                <div className="brick__value">
+                    <Highlight text={value} query={query} />
+                </div>
+            )}
+        </div>
+    );
 }
+
 export default BrickItem

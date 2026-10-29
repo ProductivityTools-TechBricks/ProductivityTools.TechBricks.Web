@@ -1,12 +1,10 @@
 import * as apiService from '../../services/apiService'
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import BrickItem from '../BrickItem'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import BrickItem, { brickTitle, brickValue } from '../BrickItem'
 import { useAuth } from '../../Session/AuthContext.js'
+import { logout } from '../../Session/firebase'
 import { v4 as uuidv4 } from 'uuid'
-import { auth } from '../../Session/firebase.js'
-import { useParams } from "react-router-dom";
-import { getUserName } from '../../Tools/usertools'
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Dialog from '@mui/material/Dialog';
@@ -19,20 +17,40 @@ import Button from '@mui/material/Button';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import InputLabel from '@mui/material/InputLabel';
+import Snackbar from '@mui/material/Snackbar';
+
+const SAVE_DELAY_MS = 800;
+const byName = (a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+
+// Very old bricks may have no id; give them one so they can be edited.
+const withBrickIds = (pallets) => (pallets || []).map(p => ({
+    ...p,
+    bricks: (p.bricks || []).map(b => b.id ? b : { ...b, id: uuidv4() }),
+}));
+
+const matches = (brick, q) => {
+    if (!q) return true;
+    const needle = q.toLowerCase();
+    return brickTitle(brick).toLowerCase().includes(needle) || brickValue(brick).toLowerCase().includes(needle);
+};
 
 function BrickList() {
     const [pallets, setPallets] = useState([])
-    const [palletsRefresher, setPalletsRefresher] = useState(1);
-    const [selectedPallet, setSelectedPallet] = useState(null)
-    const [editableFields, setEditableFields] = useState([]);
-    
+    const [loading, setLoading] = useState(true)
+    const [selectedId, setSelectedId] = useState(null)
+    const [editingIds, setEditingIds] = useState([]);
+    const [palletFilter, setPalletFilter] = useState('');
+    const [brickFilter, setBrickFilter] = useState('');
+    const [saveState, setSaveState] = useState('saved');
+    const [snack, setSnack] = useState(null);
+
     // Context Menu State
     const [contextMenu, setContextMenu] = useState(null);
     const [contextMenuPallet, setContextMenuPallet] = useState(null);
     const [renamingPalletId, setRenamingPalletId] = useState(null);
     const [renamingPalletName, setRenamingPalletName] = useState("");
     const [renameDialogOpen, setRenameDialogOpen] = useState(false);
-    
+
     // Delete Dialog State
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [palletToDelete, setPalletToDelete] = useState(null);
@@ -43,127 +61,177 @@ function BrickList() {
     const [targetPalletIdMove, setTargetPalletIdMove] = useState("");
     const [dragHoveredPalletId, setDragHoveredPalletId] = useState(null);
 
-    const { user } = useAuth();
+    const { user, userName, loading: authLoading } = useAuth();
+    const navigate = useNavigate();
+    const params = useParams();
+    const brickFilterRef = useRef(null);
 
+    // Always-current pallets for callbacks (debounced save, undo).
+    const palletsRef = useRef(pallets);
+    palletsRef.current = pallets;
+    const pending = useRef(new Map());
+    const saveTimer = useRef(null);
 
-    let params = useParams();
+    const selectedPallet = pallets.find(p => p.document_id === selectedId) || null;
+
+    const loadPallets = useCallback(async () => {
+        const r = withBrickIds(await apiService.getPallets(user, params.username));
+        setPallets(r);
+        return r;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user?.uid, params.username]);
 
     useEffect(() => {
-        const fetchData = async () => {
-            console.log("fetch data")
-            // auth.onAuthStateChanged(async function(user) { 
-            //     if (user) {
-            //         const r = await apiService.getPallets(user,);
-            //         if (r != null) {
-            //             setPallets(r);
-            //             console.log(r);
-            //         }
-            //     }
-            //   });
-            console.log("params", params);
-            const r = await apiService.getPallets(user, params.username);
-            if (r != null) {
-                setPallets(r);
-                console.log(r);
-            }
+        if (authLoading) return;
+        if (!user) {
+            navigate('/login');
+            return;
         }
-        fetchData();
-    }, [palletsRefresher]);
+        setLoading(true);
+        loadPallets()
+            .then(r => setSelectedId(id => r.some(p => p.document_id === id) ? id : (r.length ? [...r].sort(byName)[0].document_id : null)))
+            .catch(err => setSnack({ message: `Unable to load pallets: ${err.message}` }))
+            .finally(() => setLoading(false));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [authLoading, user?.uid, params.username]);
 
+    // ---- autosave -----------------------------------------------------------
+    const flush = useCallback(async () => {
+        clearTimeout(saveTimer.current);
+        const items = [...pending.current.values()];
+        pending.current.clear();
+        if (items.length === 0) return;
+        setSaveState('saving');
+        try {
+            await Promise.all(items.map(p => apiService.updatePallet(user, p)));
+            setSaveState(pending.current.size ? 'unsaved' : 'saved');
+        } catch (err) {
+            console.error("Saving failed", err);
+            items.forEach(p => { if (!pending.current.has(p.document_id)) pending.current.set(p.document_id, p); });
+            setSaveState('error');
+        }
+    }, [user]);
 
-    const categoryClick = (e, documentId) => {
-        console.log(categoryClick)
-        console.log(e);
-        console.log(documentId)
-        let x = pallets.find(x => x.document_id == documentId);
-        console.log(x);
-        setSelectedPallet(x);
+    // Applies `change` to a pallet, updates the UI immediately and saves it with a delay.
+    const changePallet = useCallback((palletId, change) => {
+        const current = palletsRef.current.find(p => p.document_id === palletId);
+        if (!current) return;
+        const updated = change(current);
+        const next = palletsRef.current.map(p => p.document_id === palletId ? updated : p);
+        palletsRef.current = next;
+        setPallets(next);
+        pending.current.set(palletId, updated);
+        setSaveState('unsaved');
+        clearTimeout(saveTimer.current);
+        saveTimer.current = setTimeout(flush, SAVE_DELAY_MS);
+    }, [flush]);
 
+    useEffect(() => {
+        const beforeUnload = (e) => {
+            if (pending.current.size > 0) {
+                flush();
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        };
+        window.addEventListener('beforeunload', beforeUnload);
+        return () => {
+            window.removeEventListener('beforeunload', beforeUnload);
+            flush();
+        };
+    }, [flush]);
+
+    // Ctrl+F focuses the brick filter.
+    useEffect(() => {
+        const onKey = (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f' && brickFilterRef.current) {
+                e.preventDefault();
+                brickFilterRef.current.focus();
+                brickFilterRef.current.select();
+            }
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, []);
+
+    const selectPallet = (id) => {
+        setSelectedId(id);
+        setEditingIds([]);
+        setBrickFilter('');
     }
 
-    const updateSelectedPalletInPallets = () => {
-        let p = [...pallets]
-        let pallet = p.find(x => x.document_id == selectedPallet.document_id);
-        pallet.bricks = selectedPallet.bricks;
-        setPallets(p);
-    }
-
+    // ---- bricks -------------------------------------------------------------
     const updateBrick = (id, description, brick) => {
-        console.log("update brick")
-        let sp = { ...selectedPallet }
-        let item = sp.bricks.find(x => x.id == id);
-        //removing legacy property
-        delete item.key;
-        delete item.value;
-
-        item.description = description;
-        item.brick = brick;
-
-        setSelectedPallet(sp);
-
-        updateSelectedPalletInPallets();
+        changePallet(selectedId, p => ({
+            ...p,
+            bricks: p.bricks.map(b => {
+                if (b.id !== id) return b;
+                //removing legacy property
+                const { key, value, ...rest } = b;
+                return { ...rest, description, brick };
+            }),
+        }));
     }
 
     const removeBrick = (id) => {
-        console.log("remove brick- not working now")
-
-        let sp = { ...selectedPallet }
-        console.log(sp);
-        for (var i = 0; i < sp.bricks.length; i++) {
-            if (sp.bricks[i].id == id) {
-                sp.bricks.splice(i, 1)
-                i--;
-            }
-        }
-        console.log(sp);
-        setSelectedPallet(sp);
-        updateSelectedPalletInPallets();
-    }
-
-    const addEditableField = (newuuid) => {
-        setEditableFields(editableFields => [...editableFields, newuuid])
-    }
-
-    const removeEditableField = (id) => {
-        setEditableFields(editableFields => editableFields.filter(x => x !== id));
+        const palletId = selectedId;
+        const pallet = palletsRef.current.find(p => p.document_id === palletId);
+        const index = pallet.bricks.findIndex(b => b.id === id);
+        const removed = pallet.bricks[index];
+        changePallet(palletId, p => ({ ...p, bricks: p.bricks.filter(b => b.id !== id) }));
+        setSnack({
+            message: `Deleted "${brickTitle(removed) || 'Untitled'}"`,
+            undo: () => changePallet(palletId, p => {
+                const bricks = [...p.bricks];
+                bricks.splice(Math.min(index, bricks.length), 0, removed);
+                return { ...p, bricks };
+            }),
+        });
     }
 
     const addBrick = () => {
-        console.log("add brick")
-        let sp = { ...selectedPallet }
-        let newuuid = uuidv4();
-        sp.bricks.push({ id: newuuid, description: "", brick: "" });
-
-        setSelectedPallet(sp);
-        addEditableField(newuuid);
-
-        updateSelectedPalletInPallets();
+        if (!selectedPallet) return;
+        const newuuid = uuidv4();
+        setBrickFilter('');
+        changePallet(selectedId, p => ({ ...p, bricks: [{ id: newuuid, description: "", brick: "" }, ...p.bricks] }));
+        setEditingIds(ids => [...ids, newuuid]);
     }
 
-    const savePallet = () => {
-        console.log("savePallet");
-        apiService.updatePallet(user, selectedPallet);
-        setEditableFields([]);
-    }
-
-    const removePellet = () => {
-        if (selectedPallet) {
-            setPalletToDelete(selectedPallet);
-            setDeleteDialogOpen(true);
+    const finishEditing = (id) => {
+        setEditingIds(ids => ids.filter(x => x !== id));
+        const brick = selectedPallet?.bricks.find(b => b.id === id);
+        // Drop bricks that were added and left empty.
+        if (brick && !brickTitle(brick).trim() && !brickValue(brick).trim()) {
+            changePallet(selectedId, p => ({ ...p, bricks: p.bricks.filter(b => b.id !== id) }));
         }
     }
 
-    // Context Menu Handlers
+    const copyValue = async (text) => {
+        try {
+            await navigator.clipboard.writeText(text);
+            setSnack({ message: 'Copied to clipboard' });
+        } catch {
+            setSnack({ message: 'Unable to copy - the browser blocked the clipboard' });
+        }
+    }
+
+    // Moves a brick between pallets by saving both of them.
+    const moveBrick = (brickId, targetPalletId) => {
+        const sourceId = selectedId;
+        if (!brickId || !targetPalletId || targetPalletId === sourceId) return;
+        const source = palletsRef.current.find(p => p.document_id === sourceId);
+        const target = palletsRef.current.find(p => p.document_id === targetPalletId);
+        const brick = source?.bricks.find(b => b.id === brickId);
+        if (!brick || !target) return;
+        changePallet(sourceId, p => ({ ...p, bricks: p.bricks.filter(b => b.id !== brickId) }));
+        changePallet(targetPalletId, p => ({ ...p, bricks: [...p.bricks, brick] }));
+        setSnack({ message: `Moved "${brickTitle(brick) || 'Untitled'}" to ${target.name}` });
+    }
+
+    // ---- pallets ------------------------------------------------------------
     const handleContextMenu = (event, pallet) => {
         event.preventDefault();
-        setContextMenu(
-            contextMenu === null
-                ? {
-                      mouseX: event.clientX + 2,
-                      mouseY: event.clientY - 6,
-                  }
-                : null
-        );
+        setContextMenu(contextMenu === null ? { mouseX: event.clientX + 2, mouseY: event.clientY - 6 } : null);
         setContextMenuPallet(pallet);
     };
 
@@ -182,10 +250,11 @@ function BrickList() {
 
     const handleConfirmDelete = async () => {
         if (palletToDelete) {
+            pending.current.delete(palletToDelete.document_id);
             await apiService.removePellet(user, palletToDelete);
-            setPalletsRefresher(palletsRefresher + 1);
-            if (selectedPallet && selectedPallet.document_id === palletToDelete.document_id) {
-                setSelectedPallet(null);
+            setPallets(ps => ps.filter(p => p.document_id !== palletToDelete.document_id));
+            if (selectedId === palletToDelete.document_id) {
+                setSelectedId(null);
             }
         }
         setDeleteDialogOpen(false);
@@ -212,42 +281,19 @@ function BrickList() {
     };
 
     const handleRenameDialogSubmit = async () => {
-        let pallet = pallets.find(p => p.document_id === renamingPalletId);
-        if (pallet && renamingPalletName.trim() !== "" && renamingPalletName !== pallet.name) {
-            let updatedPallet = { ...pallet, name: renamingPalletName };
-            // Handled efficiently with dedicated rename/PATCH method
-            await apiService.renamePallet(user, pallet.document_id, renamingPalletName);
-            setPalletsRefresher(palletsRefresher + 1);
-            if (selectedPallet && selectedPallet.document_id === pallet.document_id) {
-                setSelectedPallet(updatedPallet);
-            }
+        const pallet = pallets.find(p => p.document_id === renamingPalletId);
+        const name = renamingPalletName.trim();
+        if (pallet && name !== "" && name !== pallet.name) {
+            await apiService.renamePallet(user, pallet.document_id, name);
+            setPallets(ps => ps.map(p => p.document_id === pallet.document_id ? { ...p, name } : p));
         }
         handleRenameDialogClose();
     };
 
-
-    const handleDragOver = (e, targetPalletId) => {
-        e.preventDefault();
-        if (dragHoveredPalletId !== targetPalletId) {
-            setDragHoveredPalletId(targetPalletId);
-        }
-    };
-
-    const handleDragLeave = () => {
-        setDragHoveredPalletId(null);
-    };
-
-    const handleDrop = async (e, targetPalletId) => {
+    const handleDrop = (e, targetPalletId) => {
         e.preventDefault();
         setDragHoveredPalletId(null);
-        const brickId = e.dataTransfer.getData("brickId");
-        if (brickId && selectedPallet && targetPalletId && selectedPallet.document_id !== targetPalletId) {
-            await apiService.moveBrick(user, selectedPallet.document_id, targetPalletId, brickId);
-            setPalletsRefresher(palletsRefresher + 1);
-            let sp = { ...selectedPallet };
-            sp.bricks = sp.bricks.filter(b => b.id !== brickId);
-            setSelectedPallet(sp);
-        }
+        moveBrick(e.dataTransfer.getData("brickId"), targetPalletId);
     };
 
     const initMoveBrick = (brick) => {
@@ -262,70 +308,97 @@ function BrickList() {
         setTargetPalletIdMove("");
     };
 
-    const handleMoveBrickSubmit = async () => {
-        if (brickToMove && selectedPallet && targetPalletIdMove) {
-            await apiService.moveBrick(user, selectedPallet.document_id, targetPalletIdMove, brickToMove.id);
-            setPalletsRefresher(palletsRefresher + 1);
-            let sp = { ...selectedPallet };
-            sp.bricks = sp.bricks.filter(b => b.id !== brickToMove.id);
-            setSelectedPallet(sp);
+    const handleMoveBrickSubmit = () => {
+        if (brickToMove && targetPalletIdMove) {
+            moveBrick(brickToMove.id, targetPalletIdMove);
         }
         handleMoveBrickDialogClose();
     };
 
-    const renderMenu = () => {
-        return (<ul>{pallets.sort((a, b) => (a.name > b.name) ? 1 : -1).map(x => {
-            //return (<li><Link to="#" onClick={(e) => categoryClick(e, x.document_id)} >{x.name} - {x.document_id}</Link></li>)
-            return (<li><Link to="#" onClick={(e) => categoryClick(e, x.document_id)} >{x.name}</Link></li>)
-        })}</ul>)
+    const logoutAction = async () => {
+        await flush();
+        await logout();
+        navigate("/login");
     }
 
-    const renderBrickItems = () => {
-        if (selectedPallet) {
-            return (<div>
-                <table>
-                    {selectedPallet.bricks && selectedPallet.bricks.map(x => {
-                        return (<BrickItem key={x.id} brick={x} updateBrick={updateBrick} removeBrick={removeBrick} initMoveBrick={initMoveBrick} editableFields={editableFields} addEditableField={addEditableField} removeEditableField={removeEditableField}></BrickItem>)
-                    })}
-                </table>
-                <button onClick={savePallet}>Save pallet</button>
-                <button onClick={addBrick}>Add brick</button>
-                <button onClick={removePellet}>Remove Pellet</button>
+    // ---- rendering ----------------------------------------------------------
+    const saveLabel = { saved: '✓ saved', unsaved: 'unsaved changes…', saving: 'saving…', error: '⚠ save failed' }[saveState];
+    const visiblePallets = [...pallets].sort(byName).filter(p => p.name.toLowerCase().includes(palletFilter.toLowerCase()));
+    const visibleBricks = selectedPallet ? selectedPallet.bricks.filter(b => editingIds.includes(b.id) || matches(b, brickFilter)) : [];
 
-            </div >)
+    const renderBrickItems = () => {
+        if (loading) {
+            return <p className="tb-muted">Loading…</p>
         }
-        else {
-            return (<span>Select pallet</span>)
+        if (!selectedPallet) {
+            return <p className="tb-muted">{pallets.length ? 'Select pallet' : 'No pallets yet - create one with "+ new pallet".'}</p>
         }
+        return (
+            <>
+                <div className="main__header">
+                    {selectedPallet.owners?.filter(o => o !== userName).length > 0 &&
+                        <span className="tb-muted">shared with {selectedPallet.owners.filter(o => o !== userName).join(', ')}</span>}
+                    <input
+                        ref={brickFilterRef}
+                        className="tb-input main__filter"
+                        placeholder="filter bricks (Ctrl+F)"
+                        value={brickFilter}
+                        onChange={(e) => setBrickFilter(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Escape') setBrickFilter(''); }}
+                    />
+                    <button className="tb-button" onClick={addBrick}>+ brick</button>
+                </div>
+                {selectedPallet.bricks.length === 0 && <p className="tb-muted">This pallet is empty.</p>}
+                {selectedPallet.bricks.length > 0 && visibleBricks.length === 0 && <p className="tb-muted">No bricks match "{brickFilter}".</p>}
+                {visibleBricks.map(x => (
+                    <BrickItem
+                        key={x.id}
+                        brick={x}
+                        query={brickFilter}
+                        editing={editingIds.includes(x.id)}
+                        onEdit={() => setEditingIds(ids => ids.includes(x.id) ? ids : [...ids, x.id])}
+                        onDone={() => finishEditing(x.id)}
+                        updateBrick={updateBrick}
+                        removeBrick={removeBrick}
+                        initMoveBrick={initMoveBrick}
+                        onCopy={copyValue}
+                    />
+                ))}
+            </>
+        )
     }
 
     return (
-        <div>
-            <p>BrickList</p>
-            <p>Logged user: {getUserName()}</p>
-            <Link to="/">Home</Link>
-            <Link to="/pallets/new">New Pallet</Link>
-            <p>{palletsRefresher}</p>
+        <div className="tb-page">
+            <div className="topbar">
+                <Link to="/" className="topbar__logo">TechBricks</Link>
+                <span className={`topbar__save topbar__save--${saveState}`}>{saveLabel}</span>
+                <span className="tb-muted">{userName}</span>
+                <button className="tb-link" onClick={logoutAction}>logout</button>
+            </div>
             <div className="parent">
                 <div className='left'>
-                    <span><b>{params.username}</b> pallets: </span>
-                    {/* {renderMenu()} */}
-                    <ul>{pallets.sort((a, b) => (a.name > b.name) ? 1 : -1).map(x => {
-                        return (
-                            <li 
-                                key={x.document_id} 
-                                onContextMenu={(e) => handleContextMenu(e, x)}
-                                onDragOver={(e) => handleDragOver(e, x.document_id)}
-                                onDragLeave={handleDragLeave}
-                                onDrop={(e) => handleDrop(e, x.document_id)}
-                                style={{ fontWeight: dragHoveredPalletId === x.document_id ? 'bold' : 'normal' }}
-                            >
-                                <Link to="#" onClick={(e) => categoryClick(e, x.document_id)}>
-                                    {x.name}
-                                </Link>
-                            </li>
-                        )
-                    })}</ul>
+                    <input className="tb-input left__filter" placeholder="filter pallets" value={palletFilter} onChange={(e) => setPalletFilter(e.target.value)} />
+                    {params.username && userName && params.username !== userName &&
+                        <div className="left__owner"><b>{params.username}</b> pallets shared with you</div>}
+                    <ul className="pallets">{visiblePallets.map(x => (
+                        <li
+                            key={x.document_id}
+                            className={[
+                                x.document_id === selectedId ? 'pallets__item--selected' : '',
+                                x.document_id === dragHoveredPalletId ? 'pallets__item--drop' : '',
+                            ].join(' ')}
+                            onClick={() => selectPallet(x.document_id)}
+                            onContextMenu={(e) => handleContextMenu(e, x)}
+                            onDragOver={(e) => { e.preventDefault(); setDragHoveredPalletId(x.document_id); }}
+                            onDragLeave={() => setDragHoveredPalletId(null)}
+                            onDrop={(e) => handleDrop(e, x.document_id)}
+                        >
+                            <span className="pallets__name">» {x.name}</span>
+                            <span className="pallets__count">{x.bricks.length || ''}</span>
+                        </li>
+                    ))}</ul>
+                    <Link to="/pallets/new" className="left__new">+ new pallet</Link>
                     <Menu
                         open={contextMenu !== null}
                         onClose={handleCloseMenu}
@@ -387,7 +460,7 @@ function BrickList() {
                                     label="Target Pallet"
                                     onChange={(e) => setTargetPalletIdMove(e.target.value)}
                                 >
-                                    {pallets.filter(p => selectedPallet && p.document_id !== selectedPallet.document_id).map((p) => (
+                                    {[...pallets].sort(byName).filter(p => p.document_id !== selectedId).map((p) => (
                                         <MenuItem key={p.document_id} value={p.document_id}>
                                             {p.name}
                                         </MenuItem>
@@ -405,8 +478,13 @@ function BrickList() {
                     {renderBrickItems()}
                 </div>
             </div>
-
-            {/* <p>{JSON.stringify(pallets, null, 2)}</p> */}
+            <Snackbar
+                open={Boolean(snack)}
+                autoHideDuration={snack?.undo ? 6000 : 2000}
+                onClose={(_, reason) => { if (reason !== 'clickaway') setSnack(null); }}
+                message={snack?.message}
+                action={snack?.undo ? <Button color="inherit" size="small" onClick={() => { snack.undo(); setSnack(null); }}>Undo</Button> : undefined}
+            />
         </div>
     )
 }
