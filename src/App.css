@@ -184,6 +184,10 @@ mark {
     margin-bottom: 4px;
 }
 
+.main__footer {
+    padding-top: 12px;
+}
+
 .main__filter {
     margin-left: auto;
     width: 190px;
@@ -199,6 +203,28 @@ mark {
     display: flex;
     align-items: center;
     gap: 6px;
+}
+
+.brick__vote {
+    display: flex;
+    align-items: center;
+    gap: 1px;
+    min-width: 34px;
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    padding: 0 4px 0 2px;
+    font: inherit;
+    font-size: 12px;
+    color: #8aa;
+    cursor: pointer;
+}
+
+.brick__vote svg { font-size: 15px; }
+
+.brick__vote:hover {
+    color: #2f6f9f;
+    border-color: #cfdcdc;
 }
 
 .brick__title {
@@ -279,7 +305,7 @@ mark {
 .brick__editHint {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: flex-start;
     gap: 10px;
     font-size: 12px;
     color: #8aa;

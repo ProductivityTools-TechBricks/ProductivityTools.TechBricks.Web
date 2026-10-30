@@ -4,6 +4,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DriveFileMoveIcon from '@mui/icons-material/DriveFileMove';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 
 // Bricks are stored as {id, description, brick}; very old ones may still use {key, value}.
 export const brickTitle = (b) => b.description ?? b.key ?? '';
@@ -26,7 +27,7 @@ function Highlight({ text, query }) {
     return parts;
 }
 
-function BrickItem({ brick, query, editing, onEdit, onDone, updateBrick, removeBrick, initMoveBrick, onCopy }) {
+function BrickItem({ brick, query, editing, onEdit, onDone, updateBrick, removeBrick, initMoveBrick, onCopy, onUpvote }) {
     const titleRef = useRef(null);
     const title = brickTitle(brick);
     const value = brickValue(brick);
@@ -69,8 +70,8 @@ function BrickItem({ brick, query, editing, onEdit, onDone, updateBrick, removeB
                     onKeyDown={onKeyDown}
                 />
                 <div className="brick__editHint">
-                    Esc to finish · saved automatically
                     <button className="tb-button" onClick={onDone}>Done</button>
+                    Esc to finish · saved automatically
                 </div>
             </div>
         );
@@ -79,6 +80,10 @@ function BrickItem({ brick, query, editing, onEdit, onDone, updateBrick, removeB
     return (
         <div className="brick" id={`brick-${brick.id}`}>
             <div className="brick__header">
+                <button className="brick__vote" title="Upvote - bricks with more votes are shown higher" onClick={() => onUpvote(brick.id)}>
+                    <ArrowUpwardIcon />
+                    <span>{brick.votes || 0}</span>
+                </button>
                 <span className="brick__title" draggable onDragStart={handleDragStart} title="Drag to another pallet">
                     {title ? <Highlight text={title} query={query} /> : <i className="brick__untitled">Untitled</i>}
                 </span>

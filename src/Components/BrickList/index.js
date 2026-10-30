@@ -173,6 +173,14 @@ function BrickList() {
         }));
     }
 
+    // Votes are stored in the brick ("votes") and saved with the pallet.
+    const upvoteBrick = (id) => {
+        changePallet(selectedId, p => ({
+            ...p,
+            bricks: p.bricks.map(b => b.id === id ? { ...b, votes: (b.votes || 0) + 1 } : b),
+        }));
+    }
+
     const removeBrick = (id) => {
         const palletId = selectedId;
         const pallet = palletsRef.current.find(p => p.document_id === palletId);
@@ -193,8 +201,10 @@ function BrickList() {
         if (!selectedPallet) return;
         const newuuid = uuidv4();
         setBrickFilter('');
-        changePallet(selectedId, p => ({ ...p, bricks: [{ id: newuuid, description: "", brick: "" }, ...p.bricks] }));
+        // New bricks are added at the bottom, below the existing ones.
+        changePallet(selectedId, p => ({ ...p, bricks: [...p.bricks, { id: newuuid, description: "", brick: "" }] }));
         setEditingIds(ids => [...ids, newuuid]);
+        setTimeout(() => document.getElementById(`brick-${newuuid}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 0);
     }
 
     const finishEditing = (id) => {
@@ -324,7 +334,14 @@ function BrickList() {
     // ---- rendering ----------------------------------------------------------
     const saveLabel = { saved: '✓ saved', unsaved: 'unsaved changes…', saving: 'saving…', error: '⚠ save failed' }[saveState];
     const visiblePallets = [...pallets].sort(byName).filter(p => p.name.toLowerCase().includes(palletFilter.toLowerCase()));
-    const visibleBricks = selectedPallet ? selectedPallet.bricks.filter(b => editingIds.includes(b.id) || matches(b, brickFilter)) : [];
+    // Most upvoted bricks first; bricks with the same number of votes keep their stored order.
+    const visibleBricks = selectedPallet
+        ? selectedPallet.bricks
+            .map((b, index) => ({ b, index }))
+            .filter(({ b }) => editingIds.includes(b.id) || matches(b, brickFilter))
+            .sort((x, y) => (y.b.votes || 0) - (x.b.votes || 0) || x.index - y.index)
+            .map(({ b }) => b)
+        : [];
 
     const renderBrickItems = () => {
         if (loading) {
@@ -362,8 +379,12 @@ function BrickList() {
                         removeBrick={removeBrick}
                         initMoveBrick={initMoveBrick}
                         onCopy={copyValue}
+                        onUpvote={upvoteBrick}
                     />
                 ))}
+                <div className="main__footer">
+                    <button className="tb-button" onClick={addBrick}>+ brick</button>
+                </div>
             </>
         )
     }
