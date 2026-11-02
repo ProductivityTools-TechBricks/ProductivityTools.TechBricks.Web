@@ -27,7 +27,7 @@ function Highlight({ text, query }) {
     return parts;
 }
 
-function BrickItem({ brick, query, editing, onEdit, onDone, updateBrick, removeBrick, initMoveBrick, onCopy, onUpvote }) {
+function BrickItem({ brick, query, editing, onEdit, onDone, updateBrick, removeBrick, initMoveBrick, onCopy, onUpvote, readOnly }) {
     const titleRef = useRef(null);
     const title = brickTitle(brick);
     const value = brickValue(brick);
@@ -80,19 +80,21 @@ function BrickItem({ brick, query, editing, onEdit, onDone, updateBrick, removeB
     return (
         <div className="brick" id={`brick-${brick.id}`}>
             <div className="brick__header">
-                <button className="brick__vote" title="Upvote - bricks with more votes are shown higher" onClick={() => onUpvote(brick.id)}>
+                <button className="brick__vote" disabled={readOnly} title={readOnly ? 'Votes' : 'Upvote - bricks with more votes are shown higher'} onClick={() => onUpvote(brick.id)}>
                     <ArrowUpwardIcon />
                     <span>{brick.votes || 0}</span>
                 </button>
-                <span className="brick__title" draggable onDragStart={handleDragStart} title="Drag to another pallet">
+                <span className="brick__title" draggable={!readOnly} onDragStart={handleDragStart} title={readOnly ? undefined : 'Drag to another pallet'}>
                     {title ? <Highlight text={title} query={query} /> : <i className="brick__untitled">Untitled</i>}
                 </span>
                 <span className="brick__actions">
                     <button title="Copy value" onClick={() => onCopy(value)}><ContentCopyIcon /></button>
+                    {!readOnly && <>
                     <button title="Edit" onClick={onEdit}><EditIcon /></button>
                     <button title="Move to another pallet" onClick={() => initMoveBrick(brick)}><DriveFileMoveIcon /></button>
                     <span className="brick__drag" draggable onDragStart={handleDragStart} title="Drag to another pallet"><DragIndicatorIcon /></span>
                     <button title="Delete" className="brick__delete" onClick={() => removeBrick(brick.id)}><DeleteIcon /></button>
+                    </>}
                 </span>
             </div>
             {value && (

@@ -164,6 +164,28 @@ mark {
     white-space: nowrap;
 }
 
+.pallets__public {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+    color: #2f8f5f;
+}
+
+.pallets__public svg { font-size: 14px; }
+
+.public-banner {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    color: #2f8f5f;
+    margin: 2px 0 4px;
+}
+
+.public-banner svg { font-size: 16px; }
+
+.public-banner a { color: inherit; }
+
 .pallets__count {
     color: #8aa;
     font-size: 12px;
@@ -222,7 +244,11 @@ mark {
 
 .brick__vote svg { font-size: 15px; }
 
-.brick__vote:hover {
+.brick__vote:disabled {
+    cursor: default;
+}
+
+.brick__vote:not(:disabled):hover {
     color: #2f6f9f;
     border-color: #cfdcdc;
 }

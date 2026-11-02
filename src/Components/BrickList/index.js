@@ -18,6 +18,8 @@ import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import InputLabel from '@mui/material/InputLabel';
 import Snackbar from '@mui/material/Snackbar';
+import PublicIcon from '@mui/icons-material/Public';
+import CheckIcon from '@mui/icons-material/Check';
 
 const SAVE_DELAY_MS = 800;
 const byName = (a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
@@ -73,6 +75,9 @@ function BrickList() {
     const saveTimer = useRef(null);
 
     const selectedPallet = pallets.find(p => p.document_id === selectedId) || null;
+    // Only owners can edit; public pallets of other users (or anonymous visitors) are read-only.
+    const canEdit = (pallet) => Boolean(user && userName && pallet?.owners?.includes(userName));
+    const readOnly = !canEdit(selectedPallet);
 
     const loadPallets = useCallback(async () => {
         const r = withBrickIds(await apiService.getPallets(user, params.username));
@@ -83,7 +88,8 @@ function BrickList() {
 
     useEffect(() => {
         if (authLoading) return;
-        if (!user) {
+        // Anonymous visitors can open /<user> and see that user's public pallets.
+        if (!user && !params.username) {
             navigate('/login');
             return;
         }
@@ -241,6 +247,7 @@ function BrickList() {
     // ---- pallets ------------------------------------------------------------
     const handleContextMenu = (event, pallet) => {
         event.preventDefault();
+        if (!canEdit(pallet)) return;
         setContextMenu(contextMenu === null ? { mouseX: event.clientX + 2, mouseY: event.clientY - 6 } : null);
         setContextMenuPallet(pallet);
     };
@@ -276,6 +283,19 @@ function BrickList() {
         setPalletToDelete(null);
     };
 
+    const handleMenuTogglePublic = () => {
+        const pallet = contextMenuPallet;
+        handleCloseMenu();
+        if (!pallet) return;
+        const isPublic = !pallet.public;
+        changePallet(pallet.document_id, p => ({ ...p, public: isPublic }));
+        setSnack({
+            message: isPublic
+                ? `"${pallet.name}" is available without login at ${window.location.origin}/${userName}`
+                : `"${pallet.name}" is available only after login`,
+        });
+    };
+
     const handleMenuRename = () => {
         if (contextMenuPallet) {
             setRenamingPalletId(contextMenuPallet.document_id);
@@ -303,6 +323,7 @@ function BrickList() {
     const handleDrop = (e, targetPalletId) => {
         e.preventDefault();
         setDragHoveredPalletId(null);
+        if (readOnly || !canEdit(pallets.find(p => p.document_id === targetPalletId))) return;
         moveBrick(e.dataTransfer.getData("brickId"), targetPalletId);
     };
 
@@ -348,6 +369,9 @@ function BrickList() {
             return <p className="tb-muted">Loading…</p>
         }
         if (!selectedPallet) {
+            if (!user) {
+                return <p className="tb-muted">{params.username} has no pallets available without login. <Link to="/login">Log in</Link> to see more.</p>
+            }
             return <p className="tb-muted">{pallets.length ? 'Select pallet' : 'No pallets yet - create one with "+ new pallet".'}</p>
         }
         return (
@@ -363,8 +387,13 @@ function BrickList() {
                         onChange={(e) => setBrickFilter(e.target.value)}
                         onKeyDown={(e) => { if (e.key === 'Escape') setBrickFilter(''); }}
                     />
-                    <button className="tb-button" onClick={addBrick}>+ brick</button>
+                    {!readOnly && <button className="tb-button" onClick={addBrick}>+ brick</button>}
                 </div>
+                {selectedPallet.public && (
+                    <div className="public-banner">
+                        <PublicIcon /> Available without login: <a href={`/${params.username || userName}`}>{window.location.host}/{params.username || userName}</a>
+                    </div>
+                )}
                 {selectedPallet.bricks.length === 0 && <p className="tb-muted">This pallet is empty.</p>}
                 {selectedPallet.bricks.length > 0 && visibleBricks.length === 0 && <p className="tb-muted">No bricks match "{brickFilter}".</p>}
                 {visibleBricks.map(x => (
@@ -380,11 +409,14 @@ function BrickList() {
                         initMoveBrick={initMoveBrick}
                         onCopy={copyValue}
                         onUpvote={upvoteBrick}
+                        readOnly={readOnly}
                     />
                 ))}
-                <div className="main__footer">
-                    <button className="tb-button" onClick={addBrick}>+ brick</button>
-                </div>
+                {!readOnly && (
+                    <div className="main__footer">
+                        <button className="tb-button" onClick={addBrick}>+ brick</button>
+                    </div>
+                )}
             </>
         )
     }
@@ -393,15 +425,17 @@ function BrickList() {
         <div className="tb-page">
             <div className="topbar">
                 <Link to="/" className="topbar__logo">TechBricks</Link>
-                <span className={`topbar__save topbar__save--${saveState}`}>{saveLabel}</span>
+                <span className={`topbar__save topbar__save--${saveState}`}>{user ? saveLabel : ''}</span>
                 <span className="tb-muted">{userName}</span>
-                <button className="tb-link" onClick={logoutAction}>logout</button>
+                {user
+                    ? <button className="tb-link" onClick={logoutAction}>logout</button>
+                    : <Link to="/login" className="tb-link">login</Link>}
             </div>
             <div className="parent">
                 <div className='left'>
                     <input className="tb-input left__filter" placeholder="filter pallets" value={palletFilter} onChange={(e) => setPalletFilter(e.target.value)} />
                     {params.username && userName && params.username !== userName &&
-                        <div className="left__owner"><b>{params.username}</b> pallets shared with you</div>}
+                        <div className="left__owner"><b>{params.username}</b> pallets {user ? 'shared with you or public' : 'available without login'}</div>}
                     <ul className="pallets">{visiblePallets.map(x => (
                         <li
                             key={x.document_id}
@@ -416,10 +450,11 @@ function BrickList() {
                             onDrop={(e) => handleDrop(e, x.document_id)}
                         >
                             <span className="pallets__name">» {x.name}</span>
+                            {x.public && <span className="pallets__public" title="Available without login"><PublicIcon /></span>}
                             <span className="pallets__count">{x.bricks.length || ''}</span>
                         </li>
                     ))}</ul>
-                    <Link to="/pallets/new" className="left__new">+ new pallet</Link>
+                    {user && <Link to="/pallets/new" className="left__new">+ new pallet</Link>}
                     <Menu
                         open={contextMenu !== null}
                         onClose={handleCloseMenu}
@@ -432,6 +467,10 @@ function BrickList() {
                     >
                         <MenuItem disabled style={{ opacity: 1, fontWeight: 'bold', borderBottom: '1px solid #e0e0e0', marginBottom: '8px', color: 'black' }}>
                             {contextMenuPallet ? contextMenuPallet.name : ''}
+                        </MenuItem>
+                        <MenuItem onClick={handleMenuTogglePublic}>
+                            <CheckIcon fontSize="small" style={{ marginRight: 8, visibility: contextMenuPallet?.public ? 'visible' : 'hidden' }} />
+                            Available without login
                         </MenuItem>
                         <MenuItem onClick={handleMenuRename}>Rename</MenuItem>
                         <MenuItem onClick={handleMenuDelete}>Delete</MenuItem>
@@ -481,7 +520,7 @@ function BrickList() {
                                     label="Target Pallet"
                                     onChange={(e) => setTargetPalletIdMove(e.target.value)}
                                 >
-                                    {[...pallets].sort(byName).filter(p => p.document_id !== selectedId).map((p) => (
+                                    {[...pallets].sort(byName).filter(p => p.document_id !== selectedId && canEdit(p)).map((p) => (
                                         <MenuItem key={p.document_id} value={p.document_id}>
                                             {p.name}
                                         </MenuItem>
