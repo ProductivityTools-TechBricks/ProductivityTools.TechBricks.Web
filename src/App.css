@@ -1,5 +1,8 @@
 .App {
- color:darkslategray
+ color:darkslategray;
+ display: flex;
+ flex-direction: column;
+ height: 100vh;
 }
 
 /* ---- page / top bar ---------------------------------------------------- */
@@ -7,7 +10,8 @@
 .tb-page {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    flex: 1;
+    min-height: 0;
 }
 
 .topbar {

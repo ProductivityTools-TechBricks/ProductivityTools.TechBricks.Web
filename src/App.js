@@ -2,6 +2,7 @@ import './App.css';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 
 import { AuthProvider } from './Session/AuthContext'
+import SessionBar from './Session/SessionBar'
 
 
 import BrickList from './Components/BrickList';
@@ -13,6 +14,7 @@ function App() {
   return (
     <AuthProvider>
       <div className="App">
+        <SessionBar />
         <BrowserRouter >
           <Routes>
             {/* Old bookmarks - logging in is done with the button on every page. */}

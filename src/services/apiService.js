@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { config } from '../Consts'
 import { getIdToken } from "../Session/firebase"
+import statusService from "./statusService"
 
 async function buildHeader(forceRefresh) {
     const token = await getIdToken(forceRefresh);
@@ -23,6 +24,20 @@ async function invokeCall(user, call) {
     }
 }
 
+// Runs an API call and reports it in the status bar (pending -> success/error).
+async function withStatus(pendingMessage, successMessage, call) {
+    const opId = statusService.start(pendingMessage);
+    try {
+        const result = await call();
+        statusService.success(opId, successMessage);
+        return result;
+    } catch (err) {
+        const message = err?.response?.data?.message || err?.message || "Request failed";
+        statusService.error(opId, `${pendingMessage.replace(/…$/, '')} failed: ${message}`);
+        throw err;
+    }
+}
+
 async function addPallet(user, palletName, palletOwners) {
 
     let payload = {
@@ -38,7 +53,7 @@ async function addPallet(user, palletName, palletOwners) {
         return response.data;
     }
 
-    return invokeCall(user, call);
+    return withStatus(`Adding pallet ${palletName}…`, `Pallet ${palletName} added`, () => invokeCall(user, call));
 }
 
 async function updatePallet(user, pallet) {
@@ -49,7 +64,7 @@ async function updatePallet(user, pallet) {
         const response = await axios.post(`${config.PATH_BASE}pallet`, pallet, header)
         return response.data;
     }
-    return invokeCall(user, call);
+    return withStatus(`Saving pallet ${pallet.name}…`, `Pallet ${pallet.name} saved`, () => invokeCall(user, call));
 }
 
 async function removePellet(user, pallet) {
@@ -62,7 +77,7 @@ async function removePellet(user, pallet) {
         const response = await axios.delete(`${config.PATH_BASE}pallet`, { data: payload.data, headers: header.headers })
         return response.data;
     }
-    return invokeCall(user, call);
+    return withStatus(`Deleting pallet ${pallet.name}…`, `Pallet ${pallet.name} deleted`, () => invokeCall(user, call));
 }
 
 async function addBrick(user, data) {
@@ -89,7 +104,7 @@ async function getPallets(user, queryowner) {
         const response = await axios.get(`${config.PATH_BASE}pallet`, { params: data, headers: header.headers });
         return response.data;
     }
-    return invokeCall(user, call)
+    return withStatus('Loading pallets…', 'Pallets loaded', () => invokeCall(user, call))
 }
 
 async function getShortcuts(user) {
@@ -121,7 +136,7 @@ async function renamePallet(user, palletId, newName) {
         const response = await axios.patch(`${config.PATH_BASE}pallet`, payload, header)
         return response.data;
     }
-    return invokeCall(user, call);
+    return withStatus(`Renaming pallet to ${newName}…`, `Pallet renamed to ${newName}`, () => invokeCall(user, call));
 }
 
 async function moveBrick(user, sourcePalletId, targetPalletId, brickId) {
@@ -139,8 +154,10 @@ async function moveBrick(user, sourcePalletId, targetPalletId, brickId) {
 
 // Public pallets of all users (home page). No token needed - read-only.
 async function getPublicPallets() {
-    const response = await axios.get(`${config.PATH_BASE}pallet/public`);
-    return response.data;
+    return withStatus('Loading public pallets…', 'Public pallets loaded', async () => {
+        const response = await axios.get(`${config.PATH_BASE}pallet/public`);
+        return response.data;
+    });
 }
 
 
