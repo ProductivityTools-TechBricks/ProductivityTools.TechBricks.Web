@@ -20,6 +20,8 @@ import InputLabel from '@mui/material/InputLabel';
 import Snackbar from '@mui/material/Snackbar';
 import PublicIcon from '@mui/icons-material/Public';
 import CheckIcon from '@mui/icons-material/Check';
+import MenuIcon from '@mui/icons-material/Menu';
+import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 
 const SAVE_DELAY_MS = 800;
 const byName = (a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
@@ -46,6 +48,15 @@ function BrickList({ home = false }) {
     const [brickFilter, setBrickFilter] = useState('');
     const [saveState, setSaveState] = useState('saved');
     const [snack, setSnack] = useState(null);
+    // Left pallet tree can be hidden (like in Journal Web); remembered in the browser.
+    const [showTree, setShowTree] = useState(() => {
+        const stored = localStorage.getItem('showTree');
+        return stored !== null ? stored === 'true' : window.innerWidth > 768;
+    });
+    const toggleTree = () => setShowTree(prev => {
+        localStorage.setItem('showTree', String(!prev));
+        return !prev;
+    });
 
     // Context Menu State
     const [contextMenu, setContextMenu] = useState(null);
@@ -440,6 +451,14 @@ function BrickList({ home = false }) {
     return (
         <div className="tb-page">
             <div className="topbar">
+                <button
+                    className="topbar__tree"
+                    aria-label="toggle pallet tree"
+                    title={showTree ? 'Hide pallets' : 'Show pallets'}
+                    onClick={toggleTree}
+                >
+                    {showTree ? <MenuOpenIcon /> : <MenuIcon />}
+                </button>
                 <Link to="/" className="topbar__logo">TechBricks</Link>
                 <span className={`topbar__save topbar__save--${saveState}`}>{user ? saveLabel : ''}</span>
                 <span className="tb-muted">{userName}</span>
@@ -450,7 +469,7 @@ function BrickList({ home = false }) {
                     : <button className="tb-button" onClick={loginAction}>login</button>}
             </div>
             <div className="parent">
-                <div className='left'>
+                <div className='left' style={showTree ? undefined : { display: 'none' }}>
                     <input className="tb-input left__filter" placeholder="filter pallets" value={palletFilter} onChange={(e) => setPalletFilter(e.target.value)} />
                     {home && <div className="left__owner">pallets of all users available without login</div>}
                     {params.username && userName && params.username !== userName &&

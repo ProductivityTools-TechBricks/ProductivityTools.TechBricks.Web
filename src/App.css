@@ -25,6 +25,21 @@
     flex-shrink: 0;
 }
 
+.topbar__tree {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px;
+    margin-left: -6px;
+    border: none;
+    border-radius: 4px;
+    background: none;
+    color: #2f6f9f;
+    cursor: pointer;
+}
+
+.topbar__tree:hover { background: #eef5f5; }
+.topbar__tree svg { font-size: 20px; }
+
 .topbar__logo {
     font-weight: 700;
     font-size: 15px;
