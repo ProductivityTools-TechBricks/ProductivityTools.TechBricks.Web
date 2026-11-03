@@ -1,11 +1,9 @@
 import './App.css';
-import Login from './Session/login'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 
 import { AuthProvider } from './Session/AuthContext'
 
 
-import Home from './Components/Home'
 import BrickList from './Components/BrickList';
 import BrickItem from './Components/BrickItem'
 import PalletItemNew from './Components/PalettItemNew';
@@ -17,9 +15,10 @@ function App() {
       <div className="App">
         <BrowserRouter >
           <Routes>
-            <Route path='/login' element={<Login />} />
+            {/* Old bookmarks - logging in is done with the button on every page. */}
+            <Route path='/login' element={<Navigate to='/' replace />} />
             <Route path=":username" element={<BrickList />} />
-            <Route path='/' element={<Home />} />
+            <Route path='/' element={<BrickList key='home' home />} />
             <Route path='/bricks' element={<BrickList />} />
             <Route path='/bricks/new' element={<BrickItem />} />
             <Route path='/pallets/new' element={<PalletItemNew />} /> 

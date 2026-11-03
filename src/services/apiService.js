@@ -137,9 +137,16 @@ async function moveBrick(user, sourcePalletId, targetPalletId, brickId) {
     return invokeCall(user, call);
 }
 
+// Public pallets of all users (home page). No token needed - read-only.
+async function getPublicPallets() {
+    const response = await axios.get(`${config.PATH_BASE}pallet/public`);
+    return response.data;
+}
+
 
 export {
     addPallet,
+    getPublicPallets,
     updatePallet,
     getPallets,
     removePellet,

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import BrickItem, { brickTitle, brickValue } from '../BrickItem'
 import { useAuth } from '../../Session/AuthContext.js'
-import { logout } from '../../Session/firebase'
+import { auth, logout, signInWithGoogle } from '../../Session/firebase'
 import { v4 as uuidv4 } from 'uuid'
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -36,7 +36,8 @@ const matches = (brick, q) => {
     return brickTitle(brick).toLowerCase().includes(needle) || brickValue(brick).toLowerCase().includes(needle);
 };
 
-function BrickList() {
+// `home` - the main page: public pallets of all users, available without login.
+function BrickList({ home = false }) {
     const [pallets, setPallets] = useState([])
     const [loading, setLoading] = useState(true)
     const [selectedId, setSelectedId] = useState(null)
@@ -80,17 +81,18 @@ function BrickList() {
     const readOnly = !canEdit(selectedPallet);
 
     const loadPallets = useCallback(async () => {
-        const r = withBrickIds(await apiService.getPallets(user, params.username));
+        const r = withBrickIds(home ? await apiService.getPublicPallets() : await apiService.getPallets(user, params.username));
         setPallets(r);
         return r;
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user?.uid, params.username]);
+    }, [home, user?.uid, params.username]);
 
     useEffect(() => {
         if (authLoading) return;
-        // Anonymous visitors can open /<user> and see that user's public pallets.
-        if (!user && !params.username) {
-            navigate('/login');
+        // Anonymous visitors can open the home page (public pallets of all
+        // users) and /<user> (that user's public pallets).
+        if (!user && !params.username && !home) {
+            navigate('/');
             return;
         }
         setLoading(true);
@@ -99,7 +101,7 @@ function BrickList() {
             .catch(err => setSnack({ message: `Unable to load pallets: ${err.message}` }))
             .finally(() => setLoading(false));
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [authLoading, user?.uid, params.username]);
+    }, [authLoading, home, user?.uid, params.username]);
 
     // ---- autosave -----------------------------------------------------------
     const flush = useCallback(async () => {
@@ -349,7 +351,14 @@ function BrickList() {
     const logoutAction = async () => {
         await flush();
         await logout();
-        navigate("/login");
+        navigate("/");
+    }
+
+    const loginAction = async () => {
+        await signInWithGoogle();
+        // From the home page go to own pallets; on /<user> stay on the page.
+        const signedIn = auth.currentUser?.email?.replace('@gmail.com', '');
+        if (home && signedIn) navigate(`/${signedIn}`);
     }
 
     // ---- rendering ----------------------------------------------------------
@@ -364,20 +373,27 @@ function BrickList() {
             .map(({ b }) => b)
         : [];
 
+    const publicOwner = home ? selectedPallet?.owners?.[0] : (params.username || userName);
+
     const renderBrickItems = () => {
         if (loading) {
             return <p className="tb-muted">Loading…</p>
         }
         if (!selectedPallet) {
+            if (home) {
+                return <p className="tb-muted">{pallets.length ? 'Select pallet' : 'No pallets are available without login yet.'}</p>
+            }
             if (!user) {
-                return <p className="tb-muted">{params.username} has no pallets available without login. <Link to="/login">Log in</Link> to see more.</p>
+                return <p className="tb-muted">{params.username} has no pallets available without login. <button className="tb-link" onClick={loginAction}>Log in</button> to see more.</p>
             }
             return <p className="tb-muted">{pallets.length ? 'Select pallet' : 'No pallets yet - create one with "+ new pallet".'}</p>
         }
         return (
             <>
                 <div className="main__header">
-                    {selectedPallet.owners?.filter(o => o !== userName).length > 0 &&
+                    {home
+                        ? <span className="tb-muted">by {(selectedPallet.owners || []).join(', ')}</span>
+                        : selectedPallet.owners?.filter(o => o !== userName).length > 0 &&
                         <span className="tb-muted">shared with {selectedPallet.owners.filter(o => o !== userName).join(', ')}</span>}
                     <input
                         ref={brickFilterRef}
@@ -391,7 +407,7 @@ function BrickList() {
                 </div>
                 {selectedPallet.public && (
                     <div className="public-banner">
-                        <PublicIcon /> Available without login: <a href={`/${params.username || userName}`}>{window.location.host}/{params.username || userName}</a>
+                        <PublicIcon /> Available without login: <a href={`/${publicOwner}`}>{window.location.host}/{publicOwner}</a>
                     </div>
                 )}
                 {selectedPallet.bricks.length === 0 && <p className="tb-muted">This pallet is empty.</p>}
@@ -427,13 +443,16 @@ function BrickList() {
                 <Link to="/" className="topbar__logo">TechBricks</Link>
                 <span className={`topbar__save topbar__save--${saveState}`}>{user ? saveLabel : ''}</span>
                 <span className="tb-muted">{userName}</span>
+                {user && (home || (params.username && params.username !== userName)) &&
+                    <Link to={`/${userName}`} className="tb-link">my pallets</Link>}
                 {user
                     ? <button className="tb-link" onClick={logoutAction}>logout</button>
-                    : <Link to="/login" className="tb-link">login</Link>}
+                    : <button className="tb-button" onClick={loginAction}>login</button>}
             </div>
             <div className="parent">
                 <div className='left'>
                     <input className="tb-input left__filter" placeholder="filter pallets" value={palletFilter} onChange={(e) => setPalletFilter(e.target.value)} />
+                    {home && <div className="left__owner">pallets of all users available without login</div>}
                     {params.username && userName && params.username !== userName &&
                         <div className="left__owner"><b>{params.username}</b> pallets {user ? 'shared with you or public' : 'available without login'}</div>}
                     <ul className="pallets">{visiblePallets.map(x => (
@@ -443,6 +462,7 @@ function BrickList() {
                                 x.document_id === selectedId ? 'pallets__item--selected' : '',
                                 x.document_id === dragHoveredPalletId ? 'pallets__item--drop' : '',
                             ].join(' ')}
+                            title={home ? `by ${(x.owners || []).join(', ')}` : undefined}
                             onClick={() => selectPallet(x.document_id)}
                             onContextMenu={(e) => handleContextMenu(e, x)}
                             onDragOver={(e) => { e.preventDefault(); setDragHoveredPalletId(x.document_id); }}
@@ -454,7 +474,7 @@ function BrickList() {
                             <span className="pallets__count">{x.bricks.length || ''}</span>
                         </li>
                     ))}</ul>
-                    {user && <Link to="/pallets/new" className="left__new">+ new pallet</Link>}
+                    {user && !home && <Link to="/pallets/new" className="left__new">+ new pallet</Link>}
                     <Menu
                         open={contextMenu !== null}
                         onClose={handleCloseMenu}
